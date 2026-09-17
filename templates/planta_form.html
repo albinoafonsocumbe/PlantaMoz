@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}{% if planta %}Editar Planta{% else %}Nova Planta{% endif %} — PlantaMoz{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  {% with active='nova_planta' %}{% include 'sidebar.html' %}{% endwith %}
+
+  <div style="flex:1;min-width:0;overflow-y:auto;">
+
+    <!-- HEADER -->
+    <div style="background:linear-gradient(135deg,#0a1f0f 0%,#0d2b16 50%,#1a4d2e 100%);padding:2rem 2rem 3.5rem;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(74,222,128,.04);pointer-events:none;"></div>
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="font-size:1.4rem;font-weight:800;color:#fff;margin-bottom:.3rem;">
+            {% if planta %}<i class="fas fa-pen" style="font-size:1.1rem;margin-right:.4rem;"></i>Editar Planta{% else %}<i class="fas fa-plus-circle" style="font-size:1.1rem;margin-right:.4rem;"></i>Nova Planta{% endif %}
+          </h1>
+          <p style="color:rgba(255,255,255,.5);font-size:.82rem;">Preenche os detalhes para publicar no marketplace</p>
+        </div>
+        <a href="/dashboard/" class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.15);"><i class="fas fa-arrow-left"></i> Voltar</a>
+      </div>
+    </div>
+
+    <div style="padding:0 2rem 2rem;margin-top:-1.5rem;position:relative;max-width:720px;">
+
+      {% if erro %}<div class="alert alert-error" style="margin-bottom:1rem;"><i class="fas fa-circle-xmark"></i> {{ erro }}</div>{% endif %}
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- INFORMAÇÕES BÁSICAS -->
+        <div class="card" style="margin-bottom:1rem;">
+          <div style="padding:.9rem 1.25rem;border-bottom:1px solid var(--gray100);display:flex;align-items:center;gap:.6rem;">
+            <div style="width:28px;height:28px;background:#dcfce7;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#16a34a;font-size:.78rem;"><i class="fas fa-info"></i></div>
+            <h3 style="font-size:.875rem;font-weight:700;color:var(--gray900);">Informações Básicas</h3>
+          </div>
+          <div style="padding:1.25rem;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nome da planta *</label>
+                <input type="text" name="nome" class="form-control" value="{{ planta.nome|default:'' }}" placeholder="Ex: Orquídea Rosa" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Categoria</label>
+                <select name="categoria" class="form-control">
+                  <option value="ornamental" {% if planta.categoria == 'ornamental' %}selected{% endif %}>🌸 Ornamental</option>
+                  <option value="medicinal" {% if planta.categoria == 'medicinal' %}selected{% endif %}>🌿 Medicinal</option>
+                  <option value="fruteira" {% if planta.categoria == 'fruteira' %}selected{% endif %}>🍋 Fruteira</option>
+                  <option value="aromatica" {% if planta.categoria == 'aromatica' %}selected{% endif %}>🌺 Aromática</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descrição</label>
+              <textarea name="descricao" class="form-control" rows="3" placeholder="Descreve a planta: cuidados, tamanho, benefícios...">{{ planta.descricao|default:'' }}</textarea>
+              <span class="form-hint">Uma boa descrição atrai mais clientes.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PREÇO E IMAGEM -->
+        <div class="card" style="margin-bottom:1rem;">
+          <div style="padding:.9rem 1.25rem;border-bottom:1px solid var(--gray100);display:flex;align-items:center;gap:.6rem;">
+            <div style="width:28px;height:28px;background:#dbeafe;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#2563eb;font-size:.78rem;"><i class="fas fa-tag"></i></div>
+            <h3 style="font-size:.875rem;font-weight:700;color:var(--gray900);">Preço e Imagem</h3>
+          </div>
+          <div style="padding:1.25rem;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Preço (MT) *</label>
+                <div style="position:relative;">
+                  <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray400);font-size:.82rem;font-weight:600;">MT</span>
+                  <input type="number" name="preco" class="form-control" value="{{ planta.preco|default:'' }}" placeholder="0.00" step="0.01" min="0" required style="padding-left:36px;">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Foto da planta</label>
+                {% if planta.imagem %}
+                <div style="margin-bottom:.6rem;display:flex;align-items:center;gap:.6rem;">
+                  <img src="{{ planta.imagem.url }}" style="height:56px;width:56px;border-radius:9px;object-fit:cover;border:1px solid var(--gray200);">
+                  <span style="font-size:.75rem;color:var(--gray400);">Foto actual</span>
+                </div>
+                {% endif %}
+                <input type="file" name="imagem" class="form-control" accept="image/*" id="imgInput" onchange="previewImg(this)">
+                <span class="form-hint">JPG, PNG ou WEBP. Máx 5MB.</span>
+                <div id="imgPreview" style="display:none;margin-top:.6rem;">
+                  <img id="previewEl" style="height:80px;border-radius:9px;object-fit:cover;border:1px solid var(--gray200);">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTÕES -->
+        <div style="display:flex;gap:.75rem;">
+          <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">
+            <i class="fas fa-{% if planta %}save{% else %}upload{% endif %}"></i>
+            {% if planta %}Guardar Alterações{% else %}Publicar Planta{% endif %}
+          </button>
+          <a href="/dashboard/" class="btn btn-outline btn-lg">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function previewImg(input) {
+  const preview = document.getElementById('imgPreview');
+  const img = document.getElementById('previewEl');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => { img.src = e.target.result; preview.style.display = 'block'; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

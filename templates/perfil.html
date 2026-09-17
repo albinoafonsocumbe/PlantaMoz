@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% block title %}Perfil — PlantaMoz{% endblock %}
+{% block content %}
+<div class="page-wrap">
+{% include 'sidebar.html' with active='perfil' %}
+<div style="flex:1;min-width:0;overflow-y:auto;background:var(--n50);">
+
+<!-- ══ CABEÇALHO ══ -->
+<div class="prof-hero">
+  <div class="prof-orb prof-orb-1"></div>
+  <div class="prof-orb prof-orb-2"></div>
+  <div class="prof-orb prof-orb-3"></div>
+  <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 style="font-size:1.4rem;font-weight:800;color:#fff;margin:0;">Meu Perfil</h1>
+      <p style="color:rgba(255,255,255,.55);font-size:.82rem;margin-top:.3rem;">Gere as informações da tua conta</p>
+    </div>
+    {% if utilizador.is_vendedor %}
+    <span class="prof-hero-badge"><i class="fas fa-store"></i> Vendedor verificado</span>
+    {% else %}
+    <span class="prof-hero-badge"><i class="fas fa-user"></i> Cliente</span>
+    {% endif %}
+  </div>
+</div>
+
+<div style="padding:0 2rem 2rem;max-width:780px;margin:0 auto;">
+
+{% if sucesso %}<div class="alert alert-success" style="margin-top:1.25rem;"><i class="fas fa-circle-check"></i> {{ sucesso }}</div>{% endif %}
+{% if erro %}<div class="alert alert-error" style="margin-top:1.25rem;"><i class="fas fa-circle-xmark"></i> {{ erro }}</div>{% endif %}
+
+<!-- ══ CARTÃO DE IDENTIDADE ══ -->
+<div class="prof-card prof-card-overlap">
+  <div class="prof-cover"></div>
+  <div class="prof-main">
+    <div class="prof-avatar">
+      <span>{{ utilizador.nome|first|upper }}</span>
+      <i class="fas fa-leaf prof-avatar-leaf"></i>
+    </div>
+    <div class="prof-user">
+      <div class="prof-name">
+        {{ utilizador.nome }}
+        {% if utilizador.is_vendedor %}<i class="fas fa-badge-check" title="Vendedor"></i>{% endif %}
+      </div>
+      <div class="prof-email"><i class="fas fa-envelope"></i> {{ utilizador.email }}</div>
+      <div class="prof-badges">
+        {% if utilizador.is_vendedor %}
+        <span class="badge badge-green"><i class="fas fa-store"></i> Vendedor</span>
+        {% endif %}
+        <span class="badge badge-blue"><i class="fas fa-user"></i> Membro</span>
+        {% if utilizador.localizacao %}
+        <span class="badge badge-gray"><i class="fas fa-map-marker-alt"></i> {{ utilizador.localizacao }}</span>
+        {% endif %}
+        <span class="badge badge-gray"><i class="fas fa-calendar-day"></i> Desde {{ utilizador.data_criacao|date:"M Y" }}</span>
+      </div>
+
+      {% if utilizador.whatsapp or utilizador.instagram or utilizador.facebook %}
+      <div class="prof-social">
+        {% if utilizador.whatsapp %}<a href="https://wa.me/{{ utilizador.whatsapp }}" target="_blank" class="btn btn-sm pb-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
+        {% if utilizador.instagram %}<a href="https://instagram.com/{{ utilizador.instagram }}" target="_blank" class="btn btn-sm pb-ig"><i class="fab fa-instagram"></i> Instagram</a>{% endif %}
+        {% if utilizador.facebook %}<a href="https://facebook.com/{{ utilizador.facebook }}" target="_blank" class="btn btn-sm pb-fb"><i class="fab fa-facebook"></i> Facebook</a>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ══ ESTATÍSTICAS ══ -->
+{% if utilizador.is_vendedor %}
+<div class="prof-stats">
+  <div class="prof-stat">
+    <div class="prof-stat-icon ps-green"><i class="fas fa-seedling"></i></div>
+    <div class="prof-stat-num">{{ total_plantas }}</div>
+    <div class="prof-stat-label">Plantas à venda</div>
+  </div>
+  <div class="prof-stat">
+    <div class="prof-stat-icon ps-amber"><i class="fas fa-star"></i></div>
+    <div class="prof-stat-num">{{ media_avaliacao|default:"—" }}</div>
+    <div class="prof-stat-label">Avaliação média</div>
+  </div>
+  <div class="prof-stat">
+    <div class="prof-stat-icon ps-blue"><i class="fas fa-boxes"></i></div>
+    <div class="prof-stat-num">{{ pedidos_recebidos }}</div>
+    <div class="prof-stat-label">Encomendas</div>
+  </div>
+  <div class="prof-stat">
+    <div class="prof-stat-icon ps-violet"><i class="fas fa-leaf"></i></div>
+    <div class="prof-stat-num">{{ plantas_vendidas }}</div>
+    <div class="prof-stat-label">Plantas vendidas</div>
+  </div>
+</div>
+{% else %}
+<div class="prof-stats">
+  <div class="prof-stat">
+    <div class="prof-stat-icon ps-blue"><i class="fas fa-truck"></i></div>
+    <div class="prof-stat-num">{{ total_pedidos }}</div>
+    <div class="prof-stat-label">Encomendas</div>
+  </div>
+  <div class="prof-stat">
+    <div class="prof-stat-icon ps-pink"><i class="fas fa-heart"></i></div>
+    <div class="prof-stat-num">{{ total_favoritos }}</div>
+    <div class="prof-stat-label">Favoritas</div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ══ TIPO DE CONTA ══ -->
+<div class="card prof-tipo-card">
+  <div class="prof-edit-head">
+    <span class="prof-edit-icon"><i class="fas fa-repeat"></i></span>
+    <div style="flex:1;">
+      <h3 style="font-size:.9rem;font-weight:800;margin:0;color:var(--n800);">Tipo de conta</h3>
+      <p style="font-size:.75rem;color:var(--n400);margin:.15rem 0 0;">Uma conta — compra e vende. Alterna quando quiseres.</p>
+    </div>
+  </div>
+
+  <div style="padding:1.25rem;">
+    <div class="prof-tipo-chips">
+      <span class="prof-tipo-chip prof-tipo-on"><i class="fas fa-cart-shopping"></i> Posso comprar</span>
+      <span class="prof-tipo-chip {% if utilizador.is_vendedor %}prof-tipo-on{% else %}prof-tipo-off{% endif %}">
+        <i class="fas fa-store"></i> Posso vender
+      </span>
+    </div>
+
+    <p class="prof-tipo-note">
+      Ao ativares a venda, o teu menu ganha <b>Gerir Pedidos</b>, <b>Publicar Planta</b> e a Visão Geral vira a do vendedor.
+      Continuas sempre a poder comprar e guardar favoritos.
+    </p>
+
+    {% if utilizador.is_vendedor %}
+    <form method="POST" action="/perfil/tipo/" onsubmit="return confirm('Deixas de vender? As tuas plantas ficam ocultas do marketplace.');">
+      {% csrf_token %}
+      <input type="hidden" name="tipo" value="cliente">
+      <button type="submit" class="btn btn-block" style="border:1px solid var(--n200);color:var(--n600);background:#fff;">
+        <i class="fas fa-user"></i> Deixar de vender — ficar só cliente
+      </button>
+    </form>
+    {% else %}
+    <form method="POST" action="/perfil/tipo/">
+      {% csrf_token %}
+      <input type="hidden" name="tipo" value="vendedor">
+      <button type="submit" class="btn btn-primary btn-block">
+        <i class="fas fa-store"></i> Quero vender — ativar loja
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ══ EDITAR INFORMAÇÕES ══ -->
+<div class="card prof-edit-card">
+  <div class="prof-edit-head">
+    <span class="prof-edit-icon"><i class="fas fa-user-pen"></i></span>
+    <div>
+      <h3 style="font-size:.9rem;font-weight:800;margin:0;color:var(--n800);">Editar Informações</h3>
+      <p style="font-size:.75rem;color:var(--n400);margin:.15rem 0 0;">Mantém os teus dados actualizados</p>
+    </div>
+  </div>
+
+  <div style="padding:1.25rem;">
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-icon"><i class="fas fa-id-card"></i></span>
+          <div>
+            <div class="form-section-title">Dados Pessoais</div>
+            <div class="form-section-sub">Informação de base da tua conta</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="req">*</span> Nome completo</label>
+            <div class="form-control-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" name="nome" class="form-control" value="{{ utilizador.nome }}" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefone</label>
+            <div class="form-control-icon">
+              <i class="fas fa-phone"></i>
+              <input type="text" name="telefone" class="form-control" value="{{ utilizador.telefone|default:'' }}" placeholder="+258 84 000 0000">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="req">*</span> Email</label>
+            <div class="form-control-icon">
+              <i class="fas fa-envelope"></i>
+              <input type="email" name="email" class="form-control" value="{{ utilizador.email }}" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Localização</label>
+            <div class="form-control-icon">
+              <i class="fas fa-map-marker-alt"></i>
+              <input type="text" name="localizacao" class="form-control" value="{{ utilizador.localizacao|default:'' }}" placeholder="Ex.: Maputo">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Bio <span style="color:var(--n400);font-weight:400;">(apresenta-te aos clientes)</span></label>
+          <textarea name="bio" class="form-control" rows="3" placeholder="Ex.: Vendo plantas ornamentais em Maputo há 5 anos...">{{ utilizador.bio|default:'' }}</textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-icon"><i class="fas fa-share-nodes"></i></span>
+          <div>
+            <div class="form-section-title">Redes Sociais</div>
+            <div class="form-section-sub">Ajuda a atrair mais clientes</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp</label>
+            <input type="text" name="whatsapp" class="form-control" value="{{ utilizador.whatsapp|default:'' }}" placeholder="258840000000">
+            <span class="form-hint">Número sem espaços nem +</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fab fa-instagram" style="color:#e1306c;"></i> Instagram</label>
+            <input type="text" name="instagram" class="form-control" value="{{ utilizador.instagram|default:'' }}" placeholder="utilizador">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fab fa-facebook" style="color:#1877f2;"></i> Facebook</label>
+          <input type="text" name="facebook" class="form-control" value="{{ utilizador.facebook|default:'' }}" placeholder="nome.pagina">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-icon"><i class="fas fa-shield-halved"></i></span>
+          <div>
+            <div class="form-section-title">Segurança</div>
+            <div class="form-section-sub">Altera a tua senha quando quiseres</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-control-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="senha" class="form-control" placeholder="Nova senha (deixa em branco para manter)">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block">
+        <i class="fas fa-save"></i> Guardar Alterações
+      </button>
+    </form>
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+
+<style>
+/* ── HERO PERFIL ── */
+.prof-hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#0a1f0f,#1a4d2e);
+  padding:2rem 2rem 3.2rem;
+}
+.prof-hero-badge{
+  background:rgba(61,201,110,.15);border:1px solid rgba(61,201,110,.35);
+  color:#34d87a;font-size:.75rem;font-weight:700;
+  padding:.4rem .8rem;border-radius:999px;
+  display:flex;align-items:center;gap:.45rem;
+}
+.prof-orb{position:absolute;border-radius:50%;pointer-events:none;}
+.prof-orb-1{width:380px;height:380px;top:-180px;right:-80px;background:radial-gradient(circle,rgba(61,201,110,.16) 0%,transparent 65%);}
+.prof-orb-2{width:240px;height:240px;bottom:-120px;left:40%;background:radial-gradient(circle,rgba(61,201,110,.1) 0%,transparent 65%);}
+.prof-orb-3{width:120px;height:120px;top:40%;right:28%;background:radial-gradient(circle,rgba(61,201,110,.08) 0%,transparent 65%);}
+
+/* ── CARTÃO IDENTIDADE ── */
+.prof-card{
+  position:relative;background:#fff;border-radius:var(--r-lg);
+  box-shadow:0 12px 30px rgba(15,23,42,.08);overflow:hidden;
+  margin-top:-1.6rem;margin-bottom:1.5rem;
+}
+.prof-cover{height:74px;background:linear-gradient(135deg,var(--g600),var(--g400));position:relative;}
+.prof-cover::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 85% 0%,rgba(255,255,255,.25),transparent 55%);
+}
+.prof-main{display:flex;align-items:flex-start;gap:1.25rem;padding:1.25rem 1.5rem 1.5rem;}
+.prof-avatar{
+  width:86px;height:86px;border-radius:22px;flex-shrink:0;position:relative;
+  margin-top:-48px;
+  background:linear-gradient(135deg,var(--g600),var(--g500));
+  border:4px solid #fff;
+  box-shadow:0 8px 20px rgba(30,139,69,.35);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:900;font-size:2.1rem;
+}
+.prof-avatar-leaf{position:absolute;bottom:-6px;right:-6px;width:26px;height:26px;border-radius:50%;background:#fff;color:var(--g600);font-size:.7rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(15,23,42,.15);}
+.prof-name{font-size:1.15rem;font-weight:800;color:var(--n800);display:flex;align-items:center;gap:.4rem;}
+.prof-name i{color:var(--g500);font-size:.95rem;}
+.prof-email{font-size:.82rem;color:var(--n400);margin-top:.25rem;}
+.prof-email i{font-size:.7rem;}
+.prof-badges{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.7rem;}
+.prof-social{display:flex;gap:.5rem;margin-top:.9rem;flex-wrap:wrap;}
+.pb-wa{background:#25d366;color:#fff;border:none;}
+.pb-ig{background:linear-gradient(135deg,#f09433,#dc2743,#bc1888);color:#fff;border:none;}
+.pb-fb{background:#1877f2;color:#fff;border:none;}
+
+/* ── ESTATÍSTICAS ── */
+.prof-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem;margin-bottom:1.5rem;}
+.prof-stat{
+  background:#fff;border-radius:var(--r-lg);
+  box-shadow:0 6px 18px rgba(15,23,42,.06);
+  padding:1.1rem 1.15rem;text-align:center;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.prof-stat:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(15,23,42,.1);}
+.prof-stat-icon{
+  width:44px;height:44px;border-radius:14px;margin:0 auto .55rem;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+}
+.ps-green{background:var(--g100);color:var(--g600);}
+.ps-amber{background:#fef3c7;color:#d97706;}
+.ps-blue{background:#dbeafe;color:#2563eb;}
+.ps-violet{background:#ede9fe;color:#7c3aed;}
+.ps-pink{background:#fce7f3;color:#db2777;}
+.prof-stat-num{font-size:1.35rem;font-weight:800;color:var(--n800);line-height:1;}
+.prof-stat-label{font-size:.72rem;color:var(--n400);margin-top:.4rem;font-weight:600;}
+
+/* ── TIPO DE CONTA ── */
+.prof-tipo-card{border:1px solid var(--n100);margin-bottom:1.5rem;}
+.prof-tipo-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem;}
+.prof-tipo-chip{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.4rem .85rem;border-radius:var(--r-full);
+  font-size:.75rem;font-weight:700;
+}
+.prof-tipo-on{background:var(--g100);color:var(--g600);border:1px solid rgba(30,139,69,.2);}
+.prof-tipo-off{background:var(--n100);color:var(--n400);border:1px solid var(--n200);}
+.prof-tipo-note{font-size:.76rem;color:var(--n500);line-height:1.6;margin:0 0 .9rem;}
+
+/* ── EDIT CARD ── */
+.prof-edit-card{border:1px solid var(--n100);}
+.prof-edit-head{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.9rem 1.25rem;border-bottom:1px solid var(--n100);
+}
+.prof-edit-icon{
+  width:36px;height:36px;border-radius:12px;
+  background:var(--g100);color:var(--g600);
+  display:flex;align-items:center;justify-content:center;
+}
+@media (max-width:640px){
+  .prof-main{flex-direction:column;align-items:flex-start;}
+}
+</style>
+{% endblock %}

@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% block title %}Mensagens — PlantaMoz{% endblock %}
+{% block content %}
+
+<div style="display:flex;height:calc(100vh - 60px);overflow:hidden;">
+
+  {% with active='mensagens' %}{% include 'sidebar.html' %}{% endwith %}
+
+  <!-- LISTA DE CONVERSAS -->
+  <div style="width:270px;flex-shrink:0;background:#fff;border-right:1px solid var(--gray200);display:flex;flex-direction:column;height:100%;">
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray100);flex-shrink:0;">
+      <h3 style="font-size:.875rem;font-weight:700;color:var(--gray900);">Conversas</h3>
+    </div>
+    <div style="flex:1;overflow-y:auto;">
+      {% for c in conversas %}
+      <a href="/mensagens/{{ c.outro_id }}/" style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1.25rem;border-bottom:1px solid var(--gray100);transition:background .1s;background:{% if conversa_ativa == c.outro_id %}var(--g50){% else %}#fff{% endif %};">
+        <div style="width:40px;height:40px;background:var(--g600);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem;flex-shrink:0;position:relative;">
+          {{ c.nome|first|upper }}
+          {% if c.nao_lida %}<span style="position:absolute;top:0;right:0;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid #fff;"></span>{% endif %}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:{% if c.nao_lida %}700{% else %}600{% endif %};font-size:.85rem;color:var(--gray900);">{{ c.nome }}</div>
+          <div style="font-size:.75rem;color:var(--gray400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.ultima_msg }}</div>
+        </div>
+      </a>
+      {% empty %}
+      <div style="padding:2rem;text-align:center;color:var(--gray400);">
+        <i class="fas fa-comments" style="font-size:2rem;margin-bottom:.75rem;display:block;color:var(--gray200);"></i>
+        <p style="font-size:.82rem;">Nenhuma conversa ainda.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ÁREA DE CHAT -->
+  <div style="flex:1;display:flex;flex-direction:column;background:var(--gray50);height:100%;min-width:0;">
+    {% if conversa_ativa %}
+
+    <!-- HEADER -->
+    <div style="background:#fff;border-bottom:1px solid var(--gray200);padding:.85rem 1.5rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
+      <div style="width:38px;height:38px;background:var(--g600);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">{{ outro_utilizador.nome|first|upper }}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:.9rem;color:var(--gray900);">{{ outro_utilizador.nome }}</div>
+        <div style="font-size:.72rem;color:var(--gray400);">{{ outro_utilizador.tipo|capfirst }}</div>
+      </div>
+      {% if outro_utilizador.whatsapp %}
+      <a href="https://wa.me/{{ outro_utilizador.whatsapp }}" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- MENSAGENS -->
+    <div style="flex:1;overflow-y:auto;padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:.6rem;" id="msgArea">
+      {% for msg in mensagens %}
+      <div style="display:flex;{% if msg.remetente.id == utilizador.id %}justify-content:flex-end{% else %}justify-content:flex-start{% endif %};">
+        <div style="max-width:65%;padding:.65rem 1rem;font-size:.875rem;line-height:1.6;
+          border-radius:{% if msg.remetente.id == utilizador.id %}16px 4px 16px 16px{% else %}4px 16px 16px 16px{% endif %};
+          background:{% if msg.remetente.id == utilizador.id %}var(--g600){% else %}#fff{% endif %};
+          color:{% if msg.remetente.id == utilizador.id %}#fff{% else %}var(--gray800){% endif %};
+          box-shadow:var(--shadow-sm);
+          border:{% if msg.remetente.id != utilizador.id %}1px solid var(--gray200){% else %}none{% endif %};">
+          {% if msg.audio %}
+          <div style="display:flex;align-items:center;gap:.6rem;min-width:200px;">
+            <i class="fas fa-microphone" style="font-size:.9rem;opacity:.7;flex-shrink:0;"></i>
+            <audio controls style="flex:1;height:32px;outline:none;" src="{{ msg.audio.url }}"></audio>
+          </div>
+          {% else %}
+          <div style="white-space:pre-wrap;">{{ msg.mensagem }}</div>
+          {% endif %}
+          <div style="font-size:.65rem;opacity:.55;margin-top:.3rem;text-align:right;">{{ msg.data_envio|date:"H:i" }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="margin:auto;text-align:center;color:var(--gray400);">
+        <i class="fas fa-comment-dots" style="font-size:2.5rem;margin-bottom:.75rem;display:block;color:var(--gray200);"></i>
+        <p style="font-size:.875rem;">Inicia a conversa.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- INPUT -->
+    <div style="background:#fff;border-top:1px solid var(--gray200);padding:.85rem 1.25rem;flex-shrink:0;">
+      <form method="POST" action="/mensagens/{{ conversa_ativa }}/enviar/" enctype="multipart/form-data" id="msgForm" style="display:flex;gap:.5rem;align-items:flex-end;">
+        {% csrf_token %}
+        <input type="hidden" name="audio" id="audioInput">
+
+        <div style="flex:1;position:relative;">
+          <textarea name="mensagem" id="msgText" class="form-control" placeholder="Escreve uma mensagem..." rows="1" autocomplete="off" style="resize:none;padding-right:2.5rem;max-height:120px;overflow-y:auto;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();document.getElementById('msgForm').submit();}"></textarea>
+        </div>
+
+        <!-- BOTÃO GRAVAR ÁUDIO -->
+        <button type="button" id="recordBtn" class="btn btn-secondary" style="width:42px;height:42px;padding:0;border-radius:50%;flex-shrink:0;" title="Gravar áudio" onclick="toggleRecord()">
+          <i class="fas fa-microphone" id="recordIcon"></i>
+        </button>
+
+        <!-- BOTÃO ENVIAR -->
+        <button type="submit" class="btn btn-primary" style="width:42px;height:42px;padding:0;border-radius:50%;flex-shrink:0;">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+
+      <!-- INDICADOR DE GRAVAÇÃO -->
+      <div id="recordingBar" style="display:none;align-items:center;gap:.6rem;margin-top:.5rem;padding:.5rem .75rem;background:#fee2e2;border-radius:var(--r);font-size:.8rem;color:var(--red);">
+        <span style="width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1s infinite;flex-shrink:0;"></span>
+        A gravar... <span id="recTimer">0:00</span>
+        <button type="button" onclick="cancelRecord()" class="btn btn-sm btn-danger" style="margin-left:auto;padding:3px 10px;font-size:.72rem;"><i class="fas fa-xmark"></i> Cancelar</button>
+      </div>
+    </div>
+
+    {% else %}
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gray400);">
+      <div style="width:72px;height:72px;background:var(--gray100);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;color:var(--gray300);margin-bottom:1rem;"><i class="fas fa-comments"></i></div>
+      <p style="font-size:.95rem;font-weight:600;color:var(--gray600);">Seleciona uma conversa</p>
+      <p style="font-size:.82rem;color:var(--gray400);margin-top:.3rem;">Escolhe uma conversa à esquerda para começar</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+audio::-webkit-media-controls-panel{background:transparent;}
+</style>
+
+<script>
+// Scroll para o fundo
+const area = document.getElementById('msgArea');
+if (area) area.scrollTop = area.scrollHeight;
+
+// Auto-resize textarea
+const ta = document.getElementById('msgText');
+if (ta) {
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  });
+}
+
+// Gravação de áudio
+let mediaRecorder, audioChunks = [], recInterval, recSeconds = 0, isRecording = false;
+
+async function toggleRecord() {
+  if (!isRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        const file = new File([blob], 'audio.webm', { type: 'audio/webm' });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        // Enviar via form com ficheiro
+        const form = document.getElementById('msgForm');
+        const fd = new FormData(form);
+        fd.set('audio_file', file);
+        fd.delete('mensagem');
+        // Criar input file temporário
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.name = 'audio'; inp.style.display = 'none';
+        inp.files = dt.files;
+        form.appendChild(inp);
+        form.submit();
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      recSeconds = 0;
+      document.getElementById('recordBtn').style.background = '#fee2e2';
+      document.getElementById('recordBtn').style.color = 'var(--red)';
+      document.getElementById('recordIcon').className = 'fas fa-stop';
+      document.getElementById('recordingBar').style.display = 'flex';
+      recInterval = setInterval(() => {
+        recSeconds++;
+        const m = Math.floor(recSeconds / 60), s = recSeconds % 60;
+        document.getElementById('recTimer').textContent = m + ':' + String(s).padStart(2,'0');
+      }, 1000);
+    } catch(e) {
+      alert('Não foi possível aceder ao microfone. Verifica as permissões do browser.');
+    }
+  } else {
+    stopRecord();
+  }
+}
+
+function stopRecord() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  isRecording = false;
+  clearInterval(recInterval);
+  document.getElementById('recordBtn').style.background = '';
+  document.getElementById('recordBtn').style.color = '';
+  document.getElementById('recordIcon').className = 'fas fa-microphone';
+  document.getElementById('recordingBar').style.display = 'none';
+}
+
+function cancelRecord() {
+  if (mediaRecorder) {
+    mediaRecorder.ondataavailable = null;
+    mediaRecorder.onstop = null;
+    if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  }
+  isRecording = false;
+  clearInterval(recInterval);
+  document.getElementById('recordBtn').style.background = '';
+  document.getElementById('recordBtn').style.color = '';
+  document.getElementById('recordIcon').className = 'fas fa-microphone';
+  document.getElementById('recordingBar').style.display = 'none';
+}
+</script>
+{% endblock %}

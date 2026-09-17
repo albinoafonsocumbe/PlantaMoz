@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+{% load planta_tags %}
+{% block title %}Dashboard — PlantaMoz{% endblock %}
+{% block content %}
+<div class="page-wrap">
+{% include 'sidebar.html' with active='dashboard' %}
+
+<div class="db-body">
+
+  <!-- ══ HEADER BANNER ══ -->
+  <div class="db-header">
+    <div class="db-header-orb db-orb-1"></div>
+    <div class="db-header-orb db-orb-2"></div>
+    <div class="db-header-inner">
+      <div class="db-welcome">
+        <div class="db-avatar">{{ utilizador.nome|first|upper }}</div>
+        <div>
+          <div class="db-greeting">Olá, bem-vindo de volta 👋</div>
+          <h1 class="db-name">{{ utilizador.nome }}</h1>
+          {% if is_vendedor %}
+          <span class="badge badge-green" style="font-size:.68rem;margin-top:.3rem;">
+            <i class="fas fa-store"></i> Vendedor
+          </span>
+          {% else %}
+          <span class="badge badge-blue" style="font-size:.68rem;margin-top:.3rem;">
+            <i class="fas fa-user"></i> Cliente
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="db-header-actions">
+        {% if is_vendedor %}
+        <a href="/planta/nova/" class="btn btn-primary btn-lg">
+          <i class="fas fa-plus"></i> Publicar Planta
+        </a>
+        {% else %}
+        <a href="/marketplace/" class="btn btn-primary btn-lg">
+          <i class="fas fa-store"></i> Explorar Plantas
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="db-content">
+
+    {% if is_vendedor %}
+    <!-- ════════════════════════════════
+         VENDEDOR DASHBOARD
+    ════════════════════════════════ -->
+
+    <!-- STATS GRID -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-top">
+          <span class="stat-label">Minhas Plantas</span>
+          <span class="stat-icon si-g"><i class="fas fa-seedling"></i></span>
+        </div>
+        <div class="stat-val">{{ total_plantas }}</div>
+        <div class="stat-sub">
+          <span class="stat-trend trend-up"><i class="fas fa-arrow-up"></i> Activas</span>
+          no marketplace
+        </div>
+      </div>
+
+      <div class="stat stat-amber">
+        <div class="stat-top">
+          <span class="stat-label">Pedidos Pendentes</span>
+          <span class="stat-icon si-o"><i class="fas fa-clock"></i></span>
+        </div>
+        <div class="stat-val">{{ pendentes_count }}</div>
+        <div class="stat-sub">
+          {% if pendentes_count > 0 %}
+          <span class="stat-trend trend-dn"><i class="fas fa-circle-exclamation"></i> Atenção</span>
+          aguardam resposta
+          {% else %}
+          <span class="stat-trend trend-up"><i class="fas fa-check"></i> Em dia</span>
+          nenhum pendente
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="stat stat-purple">
+        <div class="stat-top">
+          <span class="stat-label">Avaliação Média</span>
+          <span class="stat-icon si-p"><i class="fas fa-star"></i></span>
+        </div>
+        <div class="stat-val">{{ media_avaliacao|default:"—" }}</div>
+        <div class="stat-sub">
+          {% if media_avaliacao %}
+          <span class="db-stars">
+            {% for i in "12345" %}
+            <i class="fas fa-star" style="font-size:.65rem;color:{% if forloop.counter <= media_avaliacao %}var(--amber){% else %}var(--n300){% endif %};"></i>
+            {% endfor %}
+          </span>
+          {% else %}
+          sem avaliações ainda
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="db-section-head">
+      <h2 class="db-section-title"><i class="fas fa-bolt"></i> Acções Rápidas</h2>
+    </div>
+    <div class="quick-actions" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));">
+      <a href="/planta/nova/" class="qa-card">
+        <div class="qa-icon si-g"><i class="fas fa-plus-circle"></i></div>
+        <div>
+          <div class="qa-label">Publicar Planta</div>
+          <div class="qa-desc">Adicionar nova muda</div>
+        </div>
+      </a>
+      <a href="/pedidos/gerir/" class="qa-card">
+        <div class="qa-icon si-o"><i class="fas fa-clipboard-list"></i></div>
+        <div>
+          <div class="qa-label">Gerir Pedidos</div>
+          <div class="qa-desc">
+            {% if pendentes_count > 0 %}
+            <span style="color:var(--red);font-weight:700;">{{ pendentes_count }} pendente{{ pendentes_count|pluralize:"s" }}</span>
+            {% else %}
+            Ver todos os pedidos
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      <a href="/mensagens/" class="qa-card">
+        <div class="qa-icon si-b"><i class="fas fa-envelope"></i></div>
+        <div>
+          <div class="qa-label">Mensagens</div>
+          <div class="qa-desc">Falar com clientes</div>
+        </div>
+      </a>
+      <a href="/perfil/" class="qa-card">
+        <div class="qa-icon si-p"><i class="fas fa-user-circle"></i></div>
+        <div>
+          <div class="qa-label">Meu Perfil</div>
+          <div class="qa-desc">Editar informações</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- ACTIVITY — MINHAS PLANTAS -->
+    <div class="db-section-head" style="margin-top:.25rem;">
+      <h2 class="db-section-title"><i class="fas fa-leaf"></i> Minhas Plantas</h2>
+      <a href="/planta/nova/" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Adicionar</a>
+    </div>
+
+    <div class="card">
+      {% if plantas %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Planta</th>
+              <th>Categoria</th>
+              <th>Preço</th>
+              <th>Publicada</th>
+              <th style="text-align:right;">Acções</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for planta in plantas %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="db-plant-thumb">
+                  {% if planta.imagem %}
+                  <img src="{{ planta.imagem.url }}" alt="{{ planta.nome }}">
+                  {% else %}
+                  <i class="fas {{ planta.categoria|planta_icon }}"></i>
+                  {% endif %}
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:.875rem;color:var(--n900);">{{ planta.nome }}</div>
+                  <div style="font-size:.72rem;color:var(--n400);margin-top:1px;">{{ planta.descricao|truncatechars:40 }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge {% if planta.categoria == 'ornamental' %}badge-purple{% elif planta.categoria == 'medicinal' %}badge-green{% elif planta.categoria == 'fruteira' %}badge-amber{% else %}badge-blue{% endif %}">
+                {{ planta.get_categoria_display|default:"Geral" }}
+              </span>
+            </td>
+            <td>
+              <span style="font-weight:800;color:var(--g600);font-size:.9rem;">{{ planta.preco }} MT</span>
+            </td>
+            <td>
+              <span style="font-size:.78rem;color:var(--n400);">{{ planta.data_criacao|date:"d M Y" }}</span>
+            </td>
+            <td>
+              <div style="display:flex;gap:.35rem;justify-content:flex-end;">
+                <a href="/planta/{{ planta.id }}/" class="btn btn-outline btn-sm btn-icon" title="Ver">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <a href="/planta/{{ planta.id }}/editar/" class="btn btn-secondary btn-sm btn-icon" title="Editar">
+                  <i class="fas fa-pen"></i>
+                </a>
+                <form method="POST" action="/planta/{{ planta.id }}/eliminar/" style="display:inline;"
+                      onsubmit="return confirm('Eliminar «{{ planta.nome }}»?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty" style="padding:2.5rem;">
+        <div class="empty-icon"><i class="fas fa-seedling"></i></div>
+        <h3>Nenhuma planta publicada</h3>
+        <p>Começa por publicar a tua primeira muda.</p>
+        <a href="/planta/nova/" class="btn btn-primary btn-sm" style="margin-top:1rem;">
+          <i class="fas fa-plus"></i> Publicar agora
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+
+    {% else %}
+    <!-- ════════════════════════════════
+         CLIENTE DASHBOARD
+    ════════════════════════════════ -->
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-top">
+          <span class="stat-label">Encomendas</span>
+          <span class="stat-icon si-b"><i class="fas fa-box"></i></span>
+        </div>
+        <div class="stat-val">{{ total_pedidos }}</div>
+        <div class="stat-sub">total realizadas</div>
+      </div>
+      <div class="stat stat-purple">
+        <div class="stat-top">
+          <span class="stat-label">Favoritos</span>
+          <span class="stat-icon si-p"><i class="fas fa-heart"></i></span>
+        </div>
+        <div class="stat-val">{{ total_favoritos }}</div>
+        <div class="stat-sub">plantas guardadas</div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="db-section-head">
+      <h2 class="db-section-title"><i class="fas fa-bolt"></i> Acções Rápidas</h2>
+    </div>
+    <div class="quick-actions" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));">
+      <a href="/marketplace/" class="qa-card">
+        <div class="qa-icon si-g"><i class="fas fa-store"></i></div>
+        <div>
+          <div class="qa-label">Marketplace</div>
+          <div class="qa-desc">Explorar plantas</div>
+        </div>
+      </a>
+      <a href="/encomendas/" class="qa-card">
+        <div class="qa-icon si-b"><i class="fas fa-box"></i></div>
+        <div>
+          <div class="qa-label">Encomendas</div>
+          <div class="qa-desc">Ver o estado</div>
+        </div>
+      </a>
+      <a href="/mensagens/" class="qa-card">
+        <div class="qa-icon si-o"><i class="fas fa-envelope"></i></div>
+        <div>
+          <div class="qa-label">Mensagens</div>
+          <div class="qa-desc">Chat com vendedores</div>
+        </div>
+      </a>
+      <a href="/perfil/" class="qa-card">
+        <div class="qa-icon si-p"><i class="fas fa-user-circle"></i></div>
+        <div>
+          <div class="qa-label">Meu Perfil</div>
+          <div class="qa-desc">Editar conta</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- RECENT ORDERS -->
+    <div class="db-section-head" style="margin-top:.25rem;">
+      <h2 class="db-section-title"><i class="fas fa-clock-rotate-left"></i> Encomendas Recentes</h2>
+      <a href="/encomendas/" class="btn btn-outline btn-sm">Ver todas <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <div class="card">
+      {% if pedidos %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nº Pedido</th>
+              <th>Data</th>
+              <th>Estado</th>
+              <th style="text-align:right;">Acção</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for pedido in pedidos|slice:":6" %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="db-order-icon {% if pedido.status == 'entregue' %}db-order-g{% elif pedido.status == 'confirmado' %}db-order-b{% elif pedido.status == 'cancelado' %}db-order-r{% else %}db-order-o{% endif %}">
+                  <i class="fas {% if pedido.status == 'entregue' %}fa-check{% elif pedido.status == 'confirmado' %}fa-spinner{% elif pedido.status == 'cancelado' %}fa-xmark{% else %}fa-clock{% endif %}"></i>
+                </div>
+                <span style="font-weight:700;color:var(--n900);">#{{ pedido.id }}</span>
+              </div>
+            </td>
+            <td style="color:var(--n500);font-size:.82rem;">{{ pedido.data_pedido|date:"d M Y · H:i" }}</td>
+            <td>
+              <span class="badge {% if pedido.status == 'entregue' %}badge-green{% elif pedido.status == 'confirmado' %}badge-blue{% elif pedido.status == 'cancelado' %}badge-red{% else %}badge-amber{% endif %}">
+                <i class="fas fa-circle" style="font-size:.35rem;"></i>
+                {{ pedido.status|capfirst }}
+              </span>
+            </td>
+            <td style="text-align:right;">
+              <a href="/encomendas/" class="btn btn-ghost btn-sm btn-icon" title="Ver detalhes">
+                <i class="fas fa-chevron-right"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty" style="padding:2.5rem;">
+        <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+        <h3>Nenhuma encomenda ainda</h3>
+        <p>Explora o marketplace e faz a tua primeira compra.</p>
+        <a href="/marketplace/" class="btn btn-primary btn-sm" style="margin-top:1rem;">
+          <i class="fas fa-store"></i> Explorar Plantas
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    {% endif %}
+
+  </div><!-- /db-content -->
+</div><!-- /db-body -->
+</div><!-- /page-wrap -->
+
+<style>
+/* ── DB BODY ── */
+.db-body{flex:1;min-width:0;background:var(--n50);overflow-y:auto;}
+
+/* ── HEADER BANNER ── */
+.db-header{
+  background:linear-gradient(145deg,#061a0d 0%,#0d3320 50%,#134d2e 100%);
+  padding:2.25rem 2rem 3rem;position:relative;overflow:hidden;
+}
+.db-header-orb{position:absolute;border-radius:50%;pointer-events:none;}
+.db-orb-1{width:400px;height:400px;top:-120px;right:-80px;background:radial-gradient(circle,rgba(61,201,110,.07) 0%,transparent 70%);}
+.db-orb-2{width:250px;height:250px;bottom:-80px;left:20%;background:radial-gradient(circle,rgba(61,201,110,.05) 0%,transparent 70%);}
+.db-header-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;position:relative;z-index:1;max-width:100%;
+}
+.db-welcome{display:flex;align-items:center;gap:1rem;}
+.db-avatar{
+  width:56px;height:56px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--g500),var(--g300));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:900;font-size:1.4rem;
+  border:3px solid rgba(255,255,255,.15);
+  box-shadow:0 4px 16px rgba(0,0,0,.25);
+}
+.db-greeting{font-size:.78rem;color:rgba(255,255,255,.5);font-weight:500;}
+.db-name{font-size:1.5rem;font-weight:900;color:#fff;letter-spacing:-.5px;margin-top:.1rem;}
+.db-header-actions{flex-shrink:0;}
+
+/* ── CONTENT AREA ── */
+.db-content{
+  margin-top:-1.25rem;
+  padding:0 2rem 2.5rem;
+  position:relative;z-index:1;
+}
+
+/* ── STATS override (pull up) ── */
+.db-content > .stats{margin-top:0;margin-bottom:1.5rem;}
+
+/* ── SECTION HEADS ── */
+.db-section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:1.75rem 0 .875rem;gap:1rem;
+}
+.db-section-title{
+  font-size:.95rem;font-weight:800;color:var(--n800);
+  display:flex;align-items:center;gap:8px;letter-spacing:-.2px;
+}
+.db-section-title i{color:var(--g600);font-size:.9rem;}
+
+/* ── PLANT THUMB in table ── */
+.db-plant-thumb{
+  width:42px;height:42px;border-radius:var(--r-lg);flex-shrink:0;
+  background:var(--g100);display:flex;align-items:center;justify-content:center;
+  color:var(--g600);font-size:.9rem;overflow:hidden;
+}
+.db-plant-thumb img{width:100%;height:100%;object-fit:cover;}
+
+/* ── ORDER STATUS ICON ── */
+.db-order-icon{
+  width:30px;height:30px;border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0;
+}
+.db-order-g{background:var(--g100);color:var(--g700);}
+.db-order-b{background:var(--blue-bg);color:var(--blue);}
+.db-order-o{background:var(--amber-bg);color:#d97706;}
+.db-order-r{background:var(--red-bg);color:var(--red);}
+
+/* ── STARS ── */
+.db-stars{display:flex;align-items:center;gap:1px;}
+
+/* ── QA CARD OVERRIDE ── */
+.qa-card{flex-direction:row;align-items:center;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .db-content{padding:0 1.25rem 2rem;}
+  .db-header{padding:1.75rem 1.25rem 2.5rem;}
+  .db-name{font-size:1.25rem;}
+}
+</style>
+
+{% endblock %}

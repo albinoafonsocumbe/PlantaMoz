@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load planta_tags %}
+{% block title %}Marketplace — PlantaMoz{% endblock %}
+{% block content %}
+<div class="mp-layout">
+
+  {% if request.session.utilizador_id %}
+  {% with active='marketplace' %}{% include 'sidebar.html' %}{% endwith %}
+  {% endif %}
+
+  <div class="mp-body">
+
+    <!-- ══ CABEÇALHO ══ -->
+    <div class="mp-hero">
+      <div class="mp-hero-orb mp-hero-orb-1"></div>
+      <div class="mp-hero-orb mp-hero-orb-2"></div>
+
+      <form method="GET" class="mp-hero-inner">
+        <div class="mp-hero-title-block">
+          <h1 class="mp-title">Marketplace</h1>
+          <p class="mp-sub">{{ total }} planta{{ total|pluralize:"s" }} disponíve{{ total|pluralize:"l,is" }}</p>
+        </div>
+        <div class="mp-search">
+          <div class="mp-search-wrap">
+            <i class="fas fa-search mp-search-ico"></i>
+            <input type="text" name="q" value="{{ search }}"
+                   placeholder="Pesquisar plantas…"
+                   class="mp-search-input" autocomplete="off">
+            {% if search %}
+            <button type="button" class="mp-search-clear"
+                    onclick="document.querySelector('[name=q]').value='';this.closest('form').submit();">
+              <i class="fas fa-xmark"></i>
+            </button>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-primary mp-search-btn" title="Pesquisar">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ══ BARRA DE FILTROS ══ -->
+    <div class="mp-tools">
+      <div class="mp-chips">
+        <a href="/marketplace/{% if search %}?q={{ search }}{% endif %}"
+           class="chip {% if not categoria %}active{% endif %}">
+          Todas
+        </a>
+        {% for cat, icon, label, _ in categorias %}
+        <a href="/marketplace/?categoria={{ cat }}{% if search %}&q={{ search }}{% endif %}"
+           class="chip {% if categoria == cat %}active{% endif %}">
+          <i class="fas {{ icon }}"></i> {{ label }}
+        </a>
+        {% endfor %}
+      </div>
+
+      <div class="mp-tools-right">
+        <form method="GET" class="mp-price">
+          {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+          {% if categoria %}<input type="hidden" name="categoria" value="{{ categoria }}">{% endif %}
+          {% if ordem %}<input type="hidden" name="ordem" value="{{ ordem }}">{% endif %}
+          <i class="fas fa-coins mp-price-ico"></i>
+          <input type="number" name="preco_max" value="{{ preco_max }}"
+                 class="mp-price-input" placeholder="Máx MT" min="0" title="Preço máximo (MT)">
+          <button class="btn btn-primary btn-sm mp-price-btn" title="Aplicar preço">
+            <i class="fas fa-check"></i>
+          </button>
+        </form>
+
+        <select class="mp-sort" aria-label="Ordenar por"
+                onchange="const u=new URL(window.location);u.searchParams.set('ordem',this.value);window.location=u">
+          <option value="">Ordenar</option>
+          <option value="preco_asc"  {% if ordem == 'preco_asc'  %}selected{% endif %}>Preço: menor</option>
+          <option value="preco_desc" {% if ordem == 'preco_desc' %}selected{% endif %}>Preço: maior</option>
+          <option value="recente"    {% if ordem == 'recente'    %}selected{% endif %}>Mais recente</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ══ GRID ══ -->
+    <div class="mp-grid-wrap">
+
+      {% if plantas %}
+
+      <div class="plant-grid">
+        {% for planta in plantas %}
+        <a href="/planta/{{ planta.id }}/" class="plant-card mp-card">
+          <div class="plant-thumb">
+            {% if planta.imagem %}
+              <img src="{{ planta.imagem.url }}" alt="{{ planta.nome }}" loading="lazy">
+            {% else %}
+              <i class="fas {{ planta.categoria|planta_icon }} p-icon"></i>
+            {% endif %}
+            <span class="plant-cat">{{ planta.get_categoria_display|default:"Geral" }}</span>
+          </div>
+          <div class="plant-body">
+            <div class="plant-name">{{ planta.nome }}</div>
+            <div class="mp-loc">
+              <i class="fas fa-location-dot"></i>
+              {{ planta.vendedor.localizacao|default:"Moçambique" }}
+            </div>
+            <div class="plant-foot">
+              <span class="plant-price">{{ planta.preco }} MT</span>
+              <span class="mp-arrow"><i class="fas fa-arrow-right"></i></span>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+
+      <!-- ══ PAGINAÇÃO ══ -->
+      {% if plantas.has_other_pages %}
+      <div class="pagination">
+        {% if plantas.has_previous %}
+        <a href="?page={{ plantas.previous_page_number }}{% if search %}&q={{ search }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if preco_max %}&preco_max={{ preco_max }}{% endif %}{% if ordem %}&ordem={{ ordem }}{% endif %}" class="page-btn">
+          <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+
+        {% for n in plantas.paginator.page_range %}
+          {% if n == plantas.number %}
+            <span class="page-btn active">{{ n }}</span>
+          {% elif n == 1 or n == plantas.paginator.num_pages or n >= plantas.number|add:"-2" and n <= plantas.number|add:"2" %}
+            <a href="?page={{ n }}{% if search %}&q={{ search }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if preco_max %}&preco_max={{ preco_max }}{% endif %}{% if ordem %}&ordem={{ ordem }}{% endif %}" class="page-btn">{{ n }}</a>
+          {% elif n == plantas.number|add:"-3" or n == plantas.number|add:"3" %}
+            <span class="page-btn" style="border:none;cursor:default;color:var(--n400);">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if plantas.has_next %}
+        <a href="?page={{ plantas.next_page_number }}{% if search %}&q={{ search }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if preco_max %}&preco_max={{ preco_max }}{% endif %}{% if ordem %}&ordem={{ ordem }}{% endif %}" class="page-btn">
+          <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <!-- ══ SEM RESULTADOS ══ -->
+      <div class="mp-empty">
+        <div class="mp-empty-anim"><i class="fas fa-seedling"></i></div>
+        <h3>Nenhuma planta encontrada</h3>
+        <p>Tenta outra pesquisa ou limpa os filtros.</p>
+        <a href="/marketplace/" class="btn btn-outline btn-sm" style="margin-top:1.25rem;">
+          <i class="fas fa-xmark"></i> Limpar filtros
+        </a>
+      </div>
+      {% endif %}
+
+    </div><!-- /mp-grid-wrap -->
+  </div><!-- /mp-body -->
+</div><!-- /mp-layout -->
+
+<style>
+/* ── LAYOUT ── */
+.mp-layout{display:flex;min-height:calc(100vh - var(--nav-h));}
+.mp-body{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--n50);}
+
+/* ── CABEÇALHO ── */
+.mp-hero{
+  background:linear-gradient(145deg,#061a0d 0%,#0d3320 55%,#134d2e 100%);
+  padding:2rem 2rem 2.25rem;position:relative;overflow:hidden;
+}
+.mp-hero-orb{position:absolute;border-radius:50%;pointer-events:none;}
+.mp-hero-orb-1{width:340px;height:340px;top:-110px;right:-80px;background:radial-gradient(circle,rgba(61,201,110,.06) 0%,transparent 70%);}
+.mp-hero-orb-2{width:200px;height:200px;bottom:-80px;left:32%;background:radial-gradient(circle,rgba(61,201,110,.04) 0%,transparent 70%);}
+.mp-hero-inner{
+  position:relative;z-index:1;max-width:1000px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1.75rem;flex-wrap:wrap;
+}
+.mp-title{font-size:1.625rem;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:.25rem;}
+.mp-sub{font-size:.85rem;color:var(--g300);font-weight:600;}
+
+/* Search */
+.mp-search{display:flex;gap:.5rem;align-items:center;flex:1;max-width:430px;}
+.mp-search-wrap{flex:1;position:relative;}
+.mp-search-ico{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  color:rgba(255,255,255,.4);font-size:.85rem;pointer-events:none;
+}
+.mp-search-input{
+  width:100%;padding:10px 34px 10px 36px;
+  background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.14);
+  border-radius:var(--r-md);color:#fff;font-size:.875rem;outline:none;font-family:inherit;
+  transition:border-color .15s;
+}
+.mp-search-input:focus{border-color:rgba(61,201,110,.4);background:rgba(255,255,255,.13);}
+.mp-search-input::placeholder{color:rgba(255,255,255,.35);}
+.mp-search-clear{
+  position:absolute;right:9px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:.85rem;
+  padding:2px 2px;transition:color .15s;
+}
+.mp-search-clear:hover{color:rgba(255,255,255,.85);}
+.mp-search-btn{flex-shrink:0;width:42px;padding:0;}
+
+/* ── BARRA DE FILTROS ── */
+.mp-tools{
+  background:#fff;border-bottom:1px solid var(--n200);
+  padding:.75rem 1.5rem;display:flex;align-items:center;gap:1.25rem;
+  position:sticky;top:var(--nav-h);z-index:100;box-shadow:var(--shadow-xs);
+}
+.mp-chips{display:flex;gap:.5rem;overflow-x:auto;flex:1;padding-bottom:2px;}
+.mp-chips::-webkit-scrollbar{height:0;}
+.mp-tools-right{display:flex;align-items:center;gap:.6rem;flex-shrink:0;}
+
+.mp-price{position:relative;display:flex;align-items:center;}
+.mp-price-ico{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--n400);font-size:.75rem;pointer-events:none;
+}
+.mp-price-input{
+  width:112px;padding:8px 30px 8px 28px;
+  border:1.5px solid var(--n200);border-radius:var(--r-md);
+  font-size:.8rem;font-family:inherit;outline:none;background:#fff;color:var(--n900);
+  transition:border-color .15s;
+}
+.mp-price-input:focus{border-color:var(--g500);box-shadow:0 0 0 3px rgba(30,139,69,.1);}
+.mp-price-input::placeholder{color:var(--n400);}
+.mp-price-btn{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:30px;height:30px;padding:0;border-radius:var(--r);}
+
+.mp-sort{
+  border:1.5px solid var(--n200);border-radius:var(--r-md);
+  padding:8px 10px;font-size:.8rem;background:#fff;color:var(--n700);
+  cursor:pointer;outline:none;font-family:inherit;transition:border-color .15s;
+}
+.mp-sort:focus{border-color:var(--g500);}
+
+/* ── GRID ── */
+.mp-grid-wrap{flex:1;padding:1.75rem;overflow-y:auto;min-width:0;}
+.mp-grid-wrap .plant-grid{max-width:1200px;margin:0 auto;}
+
+/* Card limpo e elegante */
+.mp-card{background:#fff;}
+.mp-card .plant-body{padding:1rem 1.05rem 1.05rem;}
+.mp-card .plant-desc{margin-bottom:0;}
+.mp-loc{
+  font-size:.72rem;color:var(--n400);display:flex;align-items:center;gap:4px;
+  margin:.15rem 0 .85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mp-loc i{font-size:.7rem;color:var(--g500);}
+.mp-card .plant-foot{margin-top:0;}
+.mp-arrow{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--g50);color:var(--g600);font-size:.7rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.mp-card:hover .mp-arrow{background:var(--g600);color:#fff;transform:translateX(2px);}
+
+/* ══ SEM RESULTADOS ══ */
+.mp-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:5rem 2rem;text-align:center;
+}
+.mp-empty-anim{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g100),var(--g200));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.875rem;color:var(--g400);margin-bottom:1.25rem;
+  animation:floatAnim 3s ease-in-out infinite;
+}
+@keyframes floatAnim{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.mp-empty h3{font-size:1rem;font-weight:700;color:var(--n700);margin-bottom:.35rem;}
+.mp-empty p{font-size:.875rem;color:var(--n400);}
+
+/* ══ ANIMAÇÃO DE ENTRADA ══ */
+@media(prefers-reduced-motion:no-preference){
+  .mp-card{opacity:0;transform:translateY(22px);transition:opacity .5s ease,transform .5s cubic-bezier(.22,1,.36,1),box-shadow .22s ease,border-color .22s ease;}
+  .mp-card.in{opacity:1;transform:none;}
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .mp-hero-inner{flex-direction:column;align-items:flex-start;gap:1rem;}
+  .mp-search{max-width:100%;width:100%;}
+  .mp-hero{padding:1.75rem 1.25rem;}
+  .mp-grid-wrap{padding:1.25rem;}
+  .mp-tools{padding:.75rem 1rem;flex-wrap:wrap;gap:.75rem;}
+  .mp-tools-right{width:100%;justify-content:space-between;}
+  .mp-price{flex:1;}
+  .mp-price-input{width:100%;}
+}
+@media(max-width:480px){
+  .plant-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+
+<script>
+/* Entrada suave dos cards */
+(function(){
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+  const cards = document.querySelectorAll('.mp-card');
+  cards.forEach((c, i) => {
+    c.style.transitionDelay = (i % 6) * 0.05 + 's';
+    c.classList.add('in');
+  });
+})();
+</script>
+
+{% endblock %}

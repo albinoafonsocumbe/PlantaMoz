@@ -1,0 +1,737 @@
+{% extends 'base.html' %}
+{% load planta_tags %}
+{% block title %}PlantaMoz — Marketplace de Plantas de Moçambique{% endblock %}
+{% block content %}
+
+<!-- ═══════════════════════════════════════
+     HERO
+═══════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg-glow"></div>
+  <div class="hero-grid-overlay"></div>
+  <div class="hero-leaf hl-1"><i class="fas fa-leaf"></i></div>
+  <div class="hero-leaf hl-2"><i class="fas fa-leaf"></i></div>
+  <div class="hero-leaf hl-3"><i class="fas fa-leaf"></i></div>
+  <div class="hero-leaf hl-4"><i class="fas fa-seedling"></i></div>
+
+  <div class="hero-wrap">
+
+    <!-- LEFT: texto + search -->
+    <div class="hero-left">
+
+      <div class="hero-tag">
+        <span class="hero-tag-dot"></span>
+        Moçambique · Marketplace de Mudas
+      </div>
+
+      <h1 class="hero-title">
+        As melhores mudas,<br>
+        <span class="hero-title-green">perto de ti.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Compra directamente de viveiros e produtores locais em todo o país.
+      </p>
+
+      <form method="GET" action="/marketplace/" class="hero-form">
+        <div class="hero-form-inner">
+          <i class="fas fa-search hero-form-ico"></i>
+          <input type="text" name="q" class="hero-form-input"
+                 placeholder="Pesquisar plantas ou viveiros…" autocomplete="off">
+        </div>
+        <button type="submit" class="btn btn-primary hero-form-btn">
+          Pesquisar
+        </button>
+      </form>
+
+      <div class="hero-cats">
+        {% for cat, icon, label, _ in categorias %}
+        <a href="/marketplace/?categoria={{ cat }}" class="hero-cat">
+          <i class="fas {{ icon }}"></i>{{ label }}
+        </a>
+        {% endfor %}
+      </div>
+
+    </div>
+
+    <!-- RIGHT: mini cards -->
+    <div class="hero-right">
+      <div class="hero-right-label">Em destaque</div>
+      <div class="hero-cards">
+        {% for planta in plantas|slice:":4" %}
+        <a href="/planta/{{ planta.id }}/" class="hc">
+          <div class="hc-img">
+            {% if planta.imagem %}
+            <img src="{{ planta.imagem.url }}" alt="{{ planta.nome }}">
+            {% else %}
+            <i class="fas {{ planta.categoria|planta_icon }}"></i>
+            {% endif %}
+          </div>
+          <div class="hc-body">
+            <div class="hc-name">{{ planta.nome }}</div>
+            <div class="hc-price">{{ planta.preco }} MT</div>
+            <div class="hc-loc"><i class="fas fa-location-dot"></i> {{ planta.vendedor.localizacao|default:"Moçambique" }}</div>
+          </div>
+        </a>
+        {% empty %}
+        {% for i in "1234" %}
+        <div class="hc hc-skeleton"></div>
+        {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     STATS
+═══════════════════════════════════════ -->
+<div class="stats-strip">
+  <div class="stats-strip-inner">
+    {% for val, label, icon in stats %}
+    <div class="stat-item">
+      <div class="stat-ico"><i class="fas {{ icon }}"></i></div>
+      <div>
+        <div class="stat-val" data-count="{{ val }}">{{ val }}</div>
+        <div class="stat-lbl">{{ label }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CATEGORIAS
+═══════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-head">
+    <h2 class="sec-title">Por categoria</h2>
+    <a href="/marketplace/" class="sec-link">Ver tudo <i class="fas fa-arrow-right"></i></a>
+  </div>
+  <div class="cats-row">
+    {% for cat, icon, label, desc in categorias %}
+    <a href="/marketplace/?categoria={{ cat }}" class="cat-block cat-{{ cat }}">
+      <div class="cat-block-icon"><i class="fas {{ icon }}"></i></div>
+      <div class="cat-block-name">{{ label }}</div>
+      <div class="cat-block-desc">{{ desc }}</div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PLANTAS EM DESTAQUE
+═══════════════════════════════════════ -->
+<div class="sec sec-alt">
+  <div class="sec-head">
+    <h2 class="sec-title">Recém chegadas</h2>
+    <a href="/marketplace/" class="sec-link">Ver todas <i class="fas fa-arrow-right"></i></a>
+  </div>
+  <div class="plant-grid">
+    {% for planta in plantas %}
+    <a href="/planta/{{ planta.id }}/" class="plant-card">
+      <div class="plant-thumb">
+        {% if planta.imagem %}
+          <img src="{{ planta.imagem.url }}" alt="{{ planta.nome }}">
+        {% else %}
+          <i class="fas {{ planta.categoria|planta_icon }} p-icon"></i>
+        {% endif %}
+        <span class="plant-cat">{{ planta.get_categoria_display|default:"Geral" }}</span>
+      </div>
+      <div class="plant-body">
+        <div class="plant-name">{{ planta.nome }}</div>
+        <div class="plant-desc">{{ planta.descricao|truncatechars:60 }}</div>
+        <div class="plant-foot">
+          <span class="plant-price">{{ planta.preco }} MT</span>
+          <span class="plant-vendor"><i class="fas fa-user-circle"></i> {{ planta.vendedor.nome }}</span>
+        </div>
+        {% if planta.vendedor.whatsapp %}
+        <a href="https://wa.me/{{ planta.vendedor.whatsapp }}?text=Olá%2C%20vi%20a%20planta%20{{ planta.nome }}%20no%20PlantaMoz!"
+           target="_blank" onclick="event.stopPropagation();"
+           class="btn btn-wa btn-sm btn-block" style="margin-top:.7rem;">
+          <i class="fab fa-whatsapp"></i> Contactar
+        </a>
+        {% endif %}
+      </div>
+    </a>
+    {% empty %}
+    <div class="empty" style="grid-column:1/-1;">
+      <div class="empty-icon"><i class="fas fa-seedling"></i></div>
+      <h3>Nenhuma planta ainda</h3>
+      <p><a href="/register/" style="color:var(--g600);font-weight:700;">Sê o primeiro a publicar!</a></p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     COMO FUNCIONA
+═══════════════════════════════════════ -->
+<div class="how">
+  <div class="sec" style="padding-top:3rem;padding-bottom:3rem;">
+    <div class="sec-head" style="justify-content:center;margin-bottom:2.5rem;">
+      <h2 class="sec-title" style="text-align:center;">Como funciona?</h2>
+    </div>
+    <div class="how-steps">
+      {% for step in steps %}
+      <div class="how-step">
+        <div class="how-step-n">{{ forloop.counter }}</div>
+        <div class="how-step-icon"><i class="fas {{ step.icon }}"></i></div>
+        <div class="how-step-title">{{ step.title }}</div>
+        <div class="how-step-desc">{{ step.desc }}</div>
+      </div>
+      {% if not forloop.last %}<div class="how-arrow"><i class="fas fa-chevron-right"></i></div>{% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CTA
+═══════════════════════════════════════ -->
+{% if not request.session.utilizador_id %}
+<div class="cta">
+  <div class="cta-glow"></div>
+  <div class="cta-box">
+    <div class="cta-eyebrow"><i class="fas fa-store"></i> Para Vendedores</div>
+    <h2 class="cta-title">Tens mudas para vender?</h2>
+    <p class="cta-sub">Publica gratuitamente e recebe clientes de todo o país.</p>
+    <div class="cta-btns">
+      <a href="/register/" class="btn btn-white btn-lg">
+        <i class="fas fa-user-plus"></i> Criar Conta Grátis
+      </a>
+      <a href="/marketplace/" class="btn btn-lg cta-btn-ghost">
+        <i class="fas fa-store"></i> Explorar
+      </a>
+    </div>
+    <div class="cta-checks">
+      <span><i class="fas fa-check"></i> Grátis</span>
+      <span><i class="fas fa-check"></i> Sem comissões</span>
+      <span><i class="fas fa-check"></i> Todo o país</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════ -->
+<footer class="ft">
+  <div class="ft-inner">
+
+    <div class="ft-brand">
+      <div class="ft-logo">
+        <div class="ft-logo-icon"><i class="fas fa-leaf"></i></div>
+        <span>PlantaMoz</span>
+      </div>
+      <p class="ft-tagline">A maior plataforma de compra e venda de mudas de Moçambique.</p>
+      <div class="ft-socials">
+        <a href="#" class="ft-soc ft-wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href="#" class="ft-soc ft-ig" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="ft-soc ft-fb" title="Facebook"><i class="fab fa-facebook"></i></a>
+      </div>
+    </div>
+
+    <div class="ft-col">
+      <div class="ft-col-title">Plataforma</div>
+      <a href="/marketplace/" class="ft-link">Marketplace</a>
+      <a href="/register/" class="ft-link">Vender Mudas</a>
+      <a href="/login/" class="ft-link">Entrar</a>
+    </div>
+
+    <div class="ft-col">
+      <div class="ft-col-title">Categorias</div>
+      <a href="/marketplace/?categoria=ornamental" class="ft-link">Ornamentais</a>
+      <a href="/marketplace/?categoria=medicinal" class="ft-link">Medicinais</a>
+      <a href="/marketplace/?categoria=fruteira" class="ft-link">Fruteiras</a>
+      <a href="/marketplace/?categoria=aromatica" class="ft-link">Aromáticas</a>
+    </div>
+
+  </div>
+  <div class="ft-bottom">
+    <span>&copy; 2026 PlantaMoz. Todos os direitos reservados.</span>
+    <span>Feito com <i class="fas fa-heart" style="color:var(--red);margin:0 3px;"></i> em Moçambique 🇲🇿</span>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════
+     STYLES
+═══════════════════════════════════════ -->
+<style>
+
+/* ════════════════════
+   HERO
+════════════════════ */
+.hero{
+  background:#061a0d;
+  padding:5rem 2rem 4rem;
+  position:relative;overflow:hidden;
+}
+.hero-bg-glow{
+  position:absolute;
+  width:700px;height:700px;
+  border-radius:50%;
+  top:-200px;right:-150px;
+  background:radial-gradient(circle,rgba(30,139,69,.12) 0%,transparent 65%);
+  pointer-events:none;
+}
+.hero-grid-overlay{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.hero-wrap{
+  max-width:1160px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 420px;
+  gap:5rem;align-items:center;position:relative;z-index:1;
+}
+
+/* Hero left */
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(61,201,110,.08);border:1px solid rgba(61,201,110,.18);
+  border-radius:100px;padding:5px 14px;
+  font-size:.72rem;font-weight:700;color:var(--g300);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:1.5rem;
+}
+.hero-tag-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--g400);
+  box-shadow:0 0 6px var(--g400);
+  animation:blink 2s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+.hero-title{
+  font-size:3rem;font-weight:900;color:#fff;
+  line-height:1.1;letter-spacing:-1px;
+  margin-bottom:.875rem;
+}
+.hero-title-green{
+  background:linear-gradient(135deg,var(--g400) 0%,#a3e635 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:.975rem;color:rgba(255,255,255,.5);
+  line-height:1.75;margin-bottom:2rem;max-width:420px;
+}
+
+/* Search */
+.hero-form{
+  display:flex;gap:.5rem;max-width:480px;margin-bottom:1.25rem;
+}
+.hero-form-inner{flex:1;position:relative;}
+.hero-form-ico{
+  position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  color:rgba(255,255,255,.35);font-size:.85rem;pointer-events:none;
+}
+.hero-form-input{
+  width:100%;padding:12px 14px 12px 38px;
+  background:rgba(255,255,255,.08);
+  border:1.5px solid rgba(255,255,255,.12);border-radius:var(--r-lg);
+  color:#fff;font-size:.9rem;outline:none;font-family:inherit;
+  transition:all .15s;
+}
+.hero-form-input:focus{
+  border-color:rgba(61,201,110,.45);
+  background:rgba(255,255,255,.11);
+}
+.hero-form-input::placeholder{color:rgba(255,255,255,.3);}
+.hero-form-btn{padding:12px 22px;flex-shrink:0;border-radius:var(--r-lg);}
+
+/* Quick cats */
+.hero-cats{display:flex;gap:.5rem;flex-wrap:wrap;}
+.hero-cat{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 13px;border-radius:100px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.55);font-size:.78rem;font-weight:600;
+  transition:all .15s;
+}
+.hero-cat:hover{
+  background:rgba(61,201,110,.14);
+  border-color:rgba(61,201,110,.3);
+  color:var(--g300);
+}
+
+/* Hero right */
+.hero-right{display:flex;flex-direction:column;gap:.75rem;}
+.hero-right-label{
+  font-size:.67rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:rgba(255,255,255,.3);margin-bottom:.1rem;
+}
+.hero-cards{display:grid;grid-template-columns:1fr 1fr;gap:.625rem;}
+.hc{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:var(--r-lg);overflow:hidden;
+  display:block;transition:all .2s;
+}
+.hc:hover{
+  background:rgba(255,255,255,.1);
+  border-color:rgba(61,201,110,.22);
+  transform:translateY(-3px);
+}
+.hc-img{
+  height:95px;background:rgba(255,255,255,.03);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.hc-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.hc:hover .hc-img img{transform:scale(1.05);}
+.hc-img i{font-size:2.25rem;color:rgba(61,201,110,.25);}
+.hc-body{padding:.6rem .75rem .75rem;}
+.hc-name{
+  font-size:.78rem;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.hc-price{font-size:.82rem;font-weight:800;color:var(--g400);margin-top:2px;}
+.hc-loc{font-size:.65rem;color:rgba(255,255,255,.35);margin-top:3px;display:flex;align-items:center;gap:3px;}
+
+/* Skeleton */
+.hc-skeleton{
+  height:160px;
+  background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.04) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.6s ease infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ════════════════════
+   STATS STRIP
+════════════════════ */
+.stats-strip{
+  background:#fff;
+  border-top:1px solid var(--n200);
+  border-bottom:1px solid var(--n200);
+}
+.stats-strip-inner{
+  max-width:1160px;margin:0 auto;padding:.625rem 2rem;
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+}
+.stat-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.75rem 2.5rem;
+  border-right:1px solid var(--n200);
+  flex:1;min-width:140px;max-width:260px;
+}
+.stat-item:last-child{border-right:none;}
+.stat-ico{
+  width:38px;height:38px;border-radius:var(--r-lg);flex-shrink:0;
+  background:var(--g100);color:var(--g600);
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;
+}
+.stat-val{font-size:1.5rem;font-weight:900;color:var(--n900);letter-spacing:-.5px;line-height:1;}
+.stat-lbl{font-size:.7rem;color:var(--n500);font-weight:500;margin-top:3px;}
+
+/* ════════════════════
+   SECTION
+════════════════════ */
+.sec{max-width:1160px;margin:0 auto;padding:3.5rem 2rem;}
+.sec-alt{background:var(--n50);}
+.sec-alt .sec{background:transparent;}
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.75rem;gap:1rem;flex-wrap:wrap;
+}
+.sec-title{font-size:1.25rem;font-weight:900;color:var(--n900);letter-spacing:-.4px;}
+.sec-link{
+  font-size:.82rem;font-weight:700;color:var(--g600);
+  display:flex;align-items:center;gap:5px;transition:gap .15s;
+}
+.sec-link:hover{gap:8px;}
+
+/* ════════════════════
+   CATEGORIES
+════════════════════ */
+.cats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.cat-block{
+  background:#fff;border:1.5px solid var(--n200);
+  border-radius:var(--r-xl);padding:1.5rem 1.25rem;
+  display:block;transition:all .22s;position:relative;overflow:hidden;
+  cursor:pointer;
+}
+.cat-block::after{
+  content:'';position:absolute;
+  bottom:0;left:0;right:0;height:3px;
+  opacity:0;transition:opacity .2s;
+}
+.cat-ornamental::after{background:linear-gradient(90deg,#ec4899,#f9a8d4);}
+.cat-medicinal::after{background:linear-gradient(90deg,var(--g500),var(--g300));}
+.cat-fruteira::after{background:linear-gradient(90deg,var(--amber),#fcd34d);}
+.cat-aromatica::after{background:linear-gradient(90deg,var(--purple),#c4b5fd);}
+.cat-block:hover{border-color:transparent;transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.cat-block:hover::after{opacity:1;}
+.cat-block-icon{
+  width:48px;height:48px;border-radius:var(--r-lg);
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+  margin-bottom:1rem;
+}
+.cat-ornamental .cat-block-icon{background:#fce7f3;color:#be185d;}
+.cat-medicinal .cat-block-icon{background:var(--g100);color:var(--g700);}
+.cat-fruteira .cat-block-icon{background:#fef3c7;color:#92400e;}
+.cat-aromatica .cat-block-icon{background:var(--purple-bg);color:#6d28d9;}
+.cat-block-name{font-weight:800;font-size:.9rem;color:var(--n900);margin-bottom:.2rem;}
+.cat-block-desc{font-size:.75rem;color:var(--n500);line-height:1.55;}
+
+/* ════════════════════
+   HOW IT WORKS
+════════════════════ */
+.how{background:#fff;border-top:1px solid var(--n200);border-bottom:1px solid var(--n200);}
+.how-steps{
+  display:flex;align-items:flex-start;gap:.5rem;
+  justify-content:center;flex-wrap:wrap;max-width:860px;margin:0 auto;
+}
+.how-step{
+  flex:1;min-width:140px;max-width:175px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+}
+.how-step-n{
+  font-size:.65rem;font-weight:800;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--g600);margin-bottom:.4rem;
+}
+.how-step-icon{
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g100),var(--g200));
+  border:2px solid var(--g200);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--g600);font-size:1.25rem;margin-bottom:.75rem;
+  box-shadow:0 4px 14px rgba(30,139,69,.12);
+}
+.how-step-title{font-weight:800;font-size:.875rem;color:var(--n900);margin-bottom:.25rem;}
+.how-step-desc{font-size:.775rem;color:var(--n500);line-height:1.6;}
+.how-arrow{
+  color:var(--n300);font-size:.9rem;
+  align-self:flex-start;margin-top:1.5rem;padding-top:1.1rem;flex-shrink:0;
+}
+
+/* ════════════════════
+   CTA
+════════════════════ */
+.cta{
+  background:linear-gradient(145deg,#061a0d 0%,#0d4a25 60%,var(--g700) 100%);
+  padding:5.5rem 2rem;text-align:center;
+  position:relative;overflow:hidden;
+}
+.cta-glow{
+  position:absolute;width:600px;height:600px;border-radius:50%;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(30,139,69,.15) 0%,transparent 65%);
+  pointer-events:none;
+}
+.cta-box{position:relative;z-index:1;max-width:520px;margin:0 auto;}
+.cta-eyebrow{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:100px;padding:5px 14px;
+  font-size:.72rem;font-weight:700;color:rgba(255,255,255,.7);
+  margin-bottom:1.25rem;letter-spacing:.3px;
+}
+.cta-title{
+  font-size:2.25rem;font-weight:900;color:#fff;
+  letter-spacing:-.7px;line-height:1.15;margin-bottom:.75rem;
+}
+.cta-sub{
+  font-size:.9rem;color:rgba(255,255,255,.55);
+  line-height:1.8;margin-bottom:2rem;
+}
+.cta-btns{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;}
+.cta-btn-ghost{
+  background:rgba(255,255,255,.08);color:#fff;
+  border:1.5px solid rgba(255,255,255,.18);
+}
+.cta-btn-ghost:hover{background:rgba(255,255,255,.14);}
+.cta-checks{
+  display:flex;gap:1.25rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;
+}
+.cta-checks span{
+  font-size:.78rem;color:rgba(255,255,255,.5);
+  display:flex;align-items:center;gap:5px;font-weight:600;
+}
+.cta-checks i{color:var(--g400);font-size:.7rem;}
+
+/* ════════════════════
+   FOOTER
+════════════════════ */
+.ft{background:var(--n950);color:var(--n400);padding:3rem 2rem 0;}
+.ft-inner{
+  max-width:1160px;margin:0 auto;
+  display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;
+  padding-bottom:2.5rem;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.ft-brand{}
+.ft-logo{
+  display:flex;align-items:center;gap:9px;
+  font-weight:900;color:#fff;font-size:1rem;margin-bottom:.875rem;letter-spacing:-.2px;
+}
+.ft-logo-icon{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--g600),var(--g500));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:.875rem;
+  box-shadow:0 2px 8px rgba(30,139,69,.3);
+}
+.ft-tagline{font-size:.82rem;line-height:1.75;max-width:230px;margin-bottom:1.1rem;color:var(--n500);}
+.ft-socials{display:flex;gap:.5rem;}
+.ft-soc{
+  width:34px;height:34px;border-radius:var(--r-md);flex-shrink:0;
+  background:rgba(255,255,255,.06);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;
+  transition:all .15s;border:1px solid rgba(255,255,255,.07);
+}
+.ft-wa:hover{background:#25d366;border-color:#25d366;}
+.ft-ig:hover{background:#e1306c;border-color:#e1306c;}
+.ft-fb:hover{background:#1877f2;border-color:#1877f2;}
+.ft-col-title{
+  font-size:.67rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.9px;color:var(--n600);margin-bottom:1rem;
+}
+.ft-link{
+  display:block;color:var(--n500);font-size:.85rem;padding:.3rem 0;
+  transition:color .12s;
+}
+.ft-link:hover{color:#fff;}
+.ft-bottom{
+  max-width:1160px;margin:0 auto;
+  padding:1.25rem 0;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;
+  font-size:.775rem;color:var(--n600);
+}
+
+/* ════════════════════
+   RESPONSIVE
+════════════════════ */
+@media(max-width:1024px){
+  .hero-wrap{grid-template-columns:1fr;gap:2.5rem;}
+  .hero-right{display:none;}
+  .hero-title{font-size:2.5rem;}
+  .cats-row{grid-template-columns:1fr 1fr;}
+  .ft-inner{grid-template-columns:1fr 1fr;gap:2rem;}
+}
+@media(max-width:640px){
+  .hero{padding:3.5rem 1.25rem 3rem;}
+  .hero-title{font-size:2rem;}
+  .hero-form{flex-direction:column;}
+  .hero-form-btn{width:100%;}
+  .stats-strip-inner{flex-direction:column;align-items:stretch;padding:.5rem 1rem;}
+  .stat-item{border-right:none;border-bottom:1px solid var(--n200);max-width:100%;padding:.75rem 0;}
+  .stat-item:last-child{border-bottom:none;}
+  .sec{padding:2rem 1.25rem;}
+  .cats-row{grid-template-columns:1fr 1fr;}
+  .how-arrow{display:none;}
+  .cta{padding:3.5rem 1.25rem;}
+  .cta-title{font-size:1.75rem;}
+  .ft-inner{grid-template-columns:1fr;gap:1.75rem;}
+  .ft-bottom{flex-direction:column;text-align:center;}
+}
+
+/* ════════════════════
+   ANIMAÇÕES & POLISH
+════════════════════ */
+.hero-title-green{
+  background-size:200% auto;
+  animation:shine 6s linear infinite;
+}
+@keyframes shine{
+  0%{background-position:0% center}
+  100%{background-position:-200% center}
+}
+
+.hero-leaf{
+  position:absolute;color:rgba(61,201,110,.16);z-index:0;
+  pointer-events:none;animation:floatY 8s ease-in-out infinite;
+}
+.hl-1{top:20%;left:5%;font-size:2.4rem;}
+.hl-2{bottom:16%;left:36%;font-size:1.7rem;animation-delay:1.2s;animation-duration:6.5s;}
+.hl-3{top:28%;right:3%;font-size:2rem;animation-delay:2s;animation-duration:9s;}
+.hl-4{bottom:12%;right:22%;font-size:1.5rem;animation-delay:.6s;animation-duration:7.5s;}
+@keyframes floatY{
+  0%,100%{transform:translateY(0) rotate(-6deg)}
+  50%{transform:translateY(-18px) rotate(8deg)}
+}
+
+/* Entrada suave ao fazer scroll */
+.cat-block,.plant-card,.how-step,.stat-item,.hc,.cta-box,.sec-head{
+  transition:opacity .55s ease, transform .55s cubic-bezier(.22,1,.36,1),
+             box-shadow .25s ease, border-color .25s ease, background .25s ease;
+}
+.rv{opacity:0;transform:translateY(26px);}
+.rv.rv-in{opacity:1;transform:none;}
+
+/* Hover reforçado nas categorias */
+.cat-block:hover .cat-block-icon{transform:scale(1.12) rotate(-4deg);}
+.cat-block-icon{transition:transform .25s ease;}
+
+/* CTA pulse subtil */
+.cta-box{transform:translateY(0);}
+.cta-box:hover{transform:translateY(-2px);}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-leaf,.hero-title-green{animation:none;}
+  .cat-block,.plant-card,.how-step,.stat-item,.hc,.cta-box,.sec-head{transition:none;}
+  .rv{opacity:1;transform:none;}
+}
+</style>
+
+<script>
+/* Entrada suave dos blocos ao fazer scroll */
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !('IntersectionObserver' in window)) return;
+
+  const els = document.querySelectorAll('.cat-block, .plant-card, .how-step, .stat-item, .hc, .cta-box, .sec-head');
+  els.forEach((el, i) => {
+    el.style.transitionDelay = (i % 6) * 0.06 + 's';
+    el.classList.add('rv');
+  });
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('rv-in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  els.forEach(el => io.observe(el));
+})();
+
+/* Contadores animados nas estatísticas */
+(function(){
+  if (!('IntersectionObserver' in window)) return;
+  const strip = document.querySelector('.stats-strip');
+  if (!strip) return;
+
+  const animate = el => {
+    const match = (el.getAttribute('data-count') || el.textContent).match(/^([\d.]+)\s*(.*)$/);
+    if (!match) return;
+    const target = parseFloat(match[1]);
+    const suffix = match[2];
+    const fmt = Number.isInteger(target) ? Math.round : n => n.toFixed(1);
+    const start = performance.now();
+    const dur = 1200;
+    const step = now => {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(target * eased) + (suffix ? ' ' + suffix : '');
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        animate(e.target);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  strip.querySelectorAll('.stat-val').forEach(v => io.observe(v));
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,165 @@
+{% load planta_tags %}
+{% with u=utilizador|default:utilizador_global %}
+{% if u %}
+<aside class="sidebar" id="main-sidebar">
+
+  <!-- ══ USER CARD ══ -->
+  <div class="sidebar-user">
+    <div style="display:flex;align-items:center;gap:.625rem;">
+      <div class="sidebar-avatar">{{ u.nome|first|upper }}</div>
+      <div style="min-width:0;">
+        <div class="sidebar-name">{{ u.nome }}</div>
+        <div class="sidebar-role">
+          {% if u.is_vendedor %}
+          <i class="fas fa-circle" style="font-size:.35rem;color:var(--g400);"></i> Vendedor
+          {% else %}
+          <i class="fas fa-circle" style="font-size:.35rem;color:#60a5fa;"></i> Cliente
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <!-- Quick status pills -->
+    <div style="display:flex;gap:.4rem;margin-top:.75rem;flex-wrap:wrap;">
+      {% if msgs_nao_lidas %}
+      <a href="/mensagens/" class="sb-pill sb-pill-red">
+        <i class="fas fa-envelope"></i> {{ msgs_nao_lidas }} msg{{ msgs_nao_lidas|pluralize:"s" }}
+      </a>
+      {% endif %}
+      {% if u.is_vendedor and pendentes_count %}
+      <span class="sb-pill sb-pill-amber">
+        <i class="fas fa-clock"></i> {{ pendentes_count }} pendente{{ pendentes_count|pluralize:"s" }}
+      </span>
+      {% endif %}
+      {% if not msgs_nao_lidas and not pendentes_count %}
+      <span class="sb-pill sb-pill-green">
+        <i class="fas fa-check-circle"></i> Em dia
+      </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══ NAVEGAÇÃO PRINCIPAL ══ -->
+  <div class="s-section">
+    <span class="s-label">Principal</span>
+
+    <a href="/dashboard/" class="s-item {% if active == 'dashboard' %}active{% endif %}">
+      <i class="fas fa-chart-pie"></i>
+      <span>Visão Geral</span>
+    </a>
+
+    <a href="/marketplace/" class="s-item {% if active == 'marketplace' %}active{% endif %}">
+      <i class="fas fa-store"></i>
+      <span>Marketplace</span>
+    </a>
+
+    {% if u.is_vendedor %}
+    <a href="/planta/nova/" class="s-item {% if active == 'nova_planta' %}active{% endif %}">
+      <i class="fas fa-plus-circle"></i>
+      <span>Publicar Planta</span>
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- ══ ACTIVIDADE ══ -->
+  <div class="s-section">
+    <span class="s-label">Actividade</span>
+
+    {% if u.is_vendedor %}
+    <a href="/pedidos/gerir/" class="s-item {% if active == 'pedidos' %}active{% endif %}">
+      <i class="fas fa-clipboard-list"></i>
+      <span>Gerir Pedidos</span>
+      {% if pendentes_count %}
+      <span class="s-badge">{{ pendentes_count }}</span>
+      {% endif %}
+    </a>
+    {% endif %}
+
+    <a href="/encomendas/" class="s-item {% if active == 'encomendas' %}active{% endif %}">
+      <i class="fas fa-box"></i>
+      <span>As Minhas Encomendas</span>
+    </a>
+
+    <a href="/mensagens/" class="s-item {% if active == 'mensagens' %}active{% endif %}">
+      <i class="fas fa-envelope"></i>
+      <span>Mensagens</span>
+      {% if msgs_nao_lidas %}
+      <span class="s-badge">{{ msgs_nao_lidas }}</span>
+      {% endif %}
+    </a>
+
+    <a href="/marketplace/?favoritos=1" class="s-item {% if active == 'favoritos' %}active{% endif %}">
+      <i class="fas fa-heart"></i>
+      <span>Favoritos</span>
+    </a>
+
+    <a href="/avaliacoes/" class="s-item {% if active == 'avaliacoes' %}active{% endif %}">
+      <i class="fas fa-star"></i>
+      <span>Avaliações</span>
+    </a>
+  </div>
+
+  <!-- ══ CONTA ══ -->
+  <div class="s-section">
+    <span class="s-label">Conta</span>
+
+    <a href="/perfil/" class="s-item {% if active == 'perfil' %}active{% endif %}">
+      <i class="fas fa-user-circle"></i>
+      <span>O Meu Perfil</span>
+    </a>
+
+    <a href="/logout/" class="s-item s-item-danger">
+      <i class="fas fa-arrow-right-from-bracket"></i>
+      <span>Terminar Sessão</span>
+    </a>
+  </div>
+
+  <!-- ══ APP VERSION / BUILD ══ -->
+  <div class="sb-footer">
+    <div class="sb-footer-logo">
+      <div style="width:22px;height:22px;background:var(--g600);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas fa-leaf" style="font-size:.55rem;color:#fff;"></i>
+      </div>
+      <span>PlantaMoz</span>
+    </div>
+    <div class="sb-footer-ver">v2.0 · 🇲🇿 Moçambique</div>
+  </div>
+
+</aside>
+
+<style>
+/* ── SIDEBAR PILLS ── */
+.sb-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:var(--r-full);
+  font-size:.67rem;font-weight:700;letter-spacing:.1px;
+  transition:all .15s;cursor:default;
+}
+.sb-pill-green{background:rgba(61,201,110,.15);color:var(--g400);border:1px solid rgba(61,201,110,.2);}
+.sb-pill-red{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.2);cursor:pointer;}
+.sb-pill-red:hover{background:rgba(239,68,68,.22);}
+.sb-pill-amber{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.2);}
+
+/* ── DANGER ITEM ── */
+.s-item-danger{color:#f87171 !important;}
+.s-item-danger i{color:#f87171 !important;}
+.s-item-danger:hover{background:rgba(239,68,68,.1) !important;color:#fca5a5 !important;}
+
+/* ── SIDEBAR FOOTER ── */
+.sb-footer{
+  margin:auto 0 0;
+  padding:.875rem 1.25rem;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+.sb-footer-logo{
+  display:flex;align-items:center;gap:.5rem;
+  font-size:.78rem;font-weight:700;color:rgba(255,255,255,.35);
+  margin-bottom:.2rem;
+}
+.sb-footer-ver{font-size:.65rem;color:rgba(255,255,255,.2);padding-left:1.75rem;}
+
+/* Make sidebar flex column so footer sticks to bottom */
+.sidebar{display:flex;flex-direction:column;}
+.s-section:last-of-type{margin-bottom:auto;}
+</style>
+{% endif %}
+{% endwith %}

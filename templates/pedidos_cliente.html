@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load planta_tags %}
+{% block title %}As Minhas Encomendas — PlantaMoz{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  {% with active='encomendas' %}{% include 'sidebar.html' %}{% endwith %}
+
+  <div class="main">
+    <div class="ph">
+      <div>
+        <h1>As Minhas Encomendas</h1>
+        <p>Acompanha o estado de todas as tuas encomendas</p>
+      </div>
+      <a href="/marketplace/" class="btn btn-primary"><i class="fas fa-store"></i> Explorar Plantas</a>
+    </div>
+
+    <!-- FILTROS -->
+    <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      {% for s, label in status_opcoes %}
+      <a href="?status={{ s }}" class="btn btn-sm {% if filtro == s %}btn-primary{% else %}btn-outline{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+
+    {% for pedido in pedidos %}
+    <div class="card" style="margin-bottom:1.25rem;">
+
+      <!-- HEADER -->
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray100);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <div style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;
+            background:{% if pedido.status == 'entregue' %}#dcfce7{% elif pedido.status == 'confirmado' %}#dbeafe{% elif pedido.status == 'cancelado' %}#fee2e2{% else %}#ffedd5{% endif %};
+            color:{% if pedido.status == 'entregue' %}#16a34a{% elif pedido.status == 'confirmado' %}#2563eb{% elif pedido.status == 'cancelado' %}var(--red){% else %}#ea580c{% endif %};">
+            <i class="fas {% if pedido.status == 'entregue' %}fa-circle-check{% elif pedido.status == 'confirmado' %}fa-circle-dot{% elif pedido.status == 'cancelado' %}fa-circle-xmark{% else %}fa-clock{% endif %}"></i>
+          </div>
+          <div>
+            <div style="font-weight:700;color:var(--gray900);font-size:.9rem;">Vendedor: {{ pedido.vendedor_nome }}</div>
+            <div style="font-size:.75rem;color:var(--gray400);">{{ pedido.data_pedido|date:"d/m/Y \à\s H:i" }}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <span class="badge {% if pedido.status == 'entregue' %}badge-green{% elif pedido.status == 'confirmado' %}badge-blue{% elif pedido.status == 'cancelado' %}badge-red{% else %}badge-orange{% endif %}" style="font-size:.8rem;padding:5px 14px;">
+            {{ pedido.status|capfirst }}
+          </span>
+          <span style="font-weight:800;color:var(--g600);font-size:1rem;">{{ pedido.total }} MT</span>
+        </div>
+      </div>
+
+      <!-- BARRA DE PROGRESSO -->
+      {% if pedido.status != 'cancelado' %}
+      <div style="padding:.9rem 1.5rem;background:var(--gray50);border-bottom:1px solid var(--gray100);">
+        <div style="display:flex;align-items:flex-start;position:relative;">
+          {% for step_status, step_label, step_icon in pedido.timeline %}
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;">
+            <div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;
+              background:{% if step_status in pedido.steps_done %}var(--g600){% else %}var(--gray200){% endif %};
+              color:{% if step_status in pedido.steps_done %}#fff{% else %}var(--gray400){% endif %};">
+              <i class="fas {{ step_icon }}"></i>
+            </div>
+            <div style="font-size:.7rem;font-weight:{% if step_status in pedido.steps_done %}700{% else %}400{% endif %};
+              color:{% if step_status in pedido.steps_done %}var(--g600){% else %}var(--gray400){% endif %};
+              margin-top:.35rem;text-align:center;white-space:nowrap;">{{ step_label }}</div>
+          </div>
+          {% if not forloop.last %}
+          <div style="flex:1;height:2px;margin-top:14px;
+            background:{% if forloop.counter < pedido.step_index %}var(--g600){% else %}var(--gray200){% endif %};"></div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div style="padding:.75rem 1.25rem;background:#fff5f5;border-bottom:1px solid #fecaca;">
+        <div style="font-size:.82rem;color:var(--red);display:flex;align-items:center;gap:.5rem;">
+          <i class="fas fa-circle-xmark"></i> Esta encomenda foi cancelada. Contacta o vendedor para mais informações.
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ITENS -->
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray100);">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray400);margin-bottom:.75rem;">Itens da encomenda</div>
+        {% for item in pedido.itens.all %}
+        <div style="display:flex;align-items:center;gap:.75rem;{% if not forloop.last %}margin-bottom:.75rem;padding-bottom:.75rem;border-bottom:1px solid var(--gray100);{% endif %}">
+          <div style="width:48px;height:48px;background:var(--g100);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--g600);font-size:1.1rem;flex-shrink:0;overflow:hidden;">
+            {% if item.planta.imagem %}
+              <img src="{{ item.planta.imagem.url }}" style="width:100%;height:100%;object-fit:cover;">
+            {% else %}
+              <i class="fas {{ item.planta.categoria|planta_icon }}"></i>
+            {% endif %}
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:600;color:var(--gray900);font-size:.875rem;">{{ item.planta.nome }}</div>
+            <div style="font-size:.75rem;color:var(--gray400);margin-top:2px;">
+              {{ item.planta.categoria|default:"Geral"|capfirst }} &middot; Quantidade: <strong>{{ item.quantidade }}</strong> &middot; {{ item.preco }} MT/un
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-weight:700;color:var(--gray900);">{{ item.subtotal }} MT</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- ACÇÕES -->
+      <div style="padding:.9rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          {% if pedido.vendedor_id %}
+          <a href="/mensagens/{{ pedido.vendedor_id }}/" class="btn btn-secondary btn-sm">
+            <i class="fas fa-comment-dots"></i> Falar com Vendedor
+          </a>
+          {% endif %}
+          {% if pedido.status == 'entregue' and pedido.vendedor_id %}
+          <a href="/avaliar/{{ pedido.vendedor_id }}/" class="btn btn-sm" style="border:1.5px solid var(--amber);color:var(--amber);background:transparent;">
+            <i class="fas fa-star"></i> Avaliar Vendedor
+          </a>
+          {% endif %}
+        </div>
+        <div style="font-size:.82rem;color:var(--gray500);">
+          Total: <strong style="color:var(--g600);font-size:.95rem;">{{ pedido.total }} MT</strong>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="card">
+      <div class="empty" style="padding:4rem;">
+        <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+        <p style="font-size:.95rem;font-weight:500;color:var(--gray600);">Ainda não fizeste nenhuma encomenda.</p>
+        <a href="/marketplace/" class="btn btn-primary" style="margin-top:1rem;"><i class="fas fa-store"></i> Explorar Plantas</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

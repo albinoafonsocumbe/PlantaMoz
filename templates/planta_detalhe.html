@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load planta_tags %}
+{% block title %}{{ planta.nome }} — PlantaMoz{% endblock %}
+{% block content %}
+<div class="page-wrap">
+
+  {% if request.session.utilizador_id %}
+  {% with active='marketplace' %}{% include 'sidebar.html' %}{% endwith %}
+  {% endif %}
+
+  <div class="main">
+
+    <!-- BREADCRUMB -->
+    <nav style="font-size:.8rem;color:var(--gray400);margin-bottom:1.75rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+      <a href="/" style="color:var(--gray400);" onmouseover="this.style.color='var(--g600)'" onmouseout="this.style.color='var(--gray400)'">Início</a>
+      <i class="fas fa-chevron-right" style="font-size:.6rem;"></i>
+      <a href="/marketplace/" style="color:var(--gray400);" onmouseover="this.style.color='var(--g600)'" onmouseout="this.style.color='var(--gray400)'">Marketplace</a>
+      <i class="fas fa-chevron-right" style="font-size:.6rem;"></i>
+      <span style="color:var(--gray700);font-weight:500;">{{ planta.nome }}</span>
+    </nav>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start;">
+
+      <!-- IMAGEM -->
+      <div style="background:linear-gradient(135deg,var(--g100),#bbf7d0);border-radius:var(--r-2xl);height:380px;display:flex;align-items:center;justify-content:center;border:1px solid var(--gray200);overflow:hidden;">
+        {% if planta.imagem %}
+          <img src="{{ planta.imagem.url }}" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          <i class="fas {{ planta.categoria|planta_icon }}" style="font-size:5rem;color:var(--g600);opacity:.3;"></i>
+        {% endif %}
+      </div>
+
+      <!-- INFO -->
+      <div>
+        <span class="badge badge-green" style="margin-bottom:.75rem;">{{ planta.categoria|default:"Geral"|capfirst }}</span>
+        <h1 style="font-size:1.75rem;font-weight:900;color:var(--gray900);line-height:1.2;margin-bottom:.6rem;">{{ planta.nome }}</h1>
+        <p style="color:var(--gray500);line-height:1.75;font-size:.9rem;margin-bottom:1.25rem;">{{ planta.descricao }}</p>
+        <div style="font-size:2rem;font-weight:900;color:var(--g600);margin-bottom:1.5rem;">
+          {{ planta.preco }} <span style="font-size:.9rem;font-weight:500;color:var(--gray400);">MT</span>
+        </div>
+
+        <!-- VENDEDOR -->
+        <div style="background:var(--gray50);border:1px solid var(--gray200);border-radius:var(--r-lg);padding:1rem;margin-bottom:1.25rem;">
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray400);margin-bottom:.6rem;">Vendedor</div>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <div style="width:42px;height:42px;background:var(--g600);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem;flex-shrink:0;">{{ planta.vendedor.nome|first|upper }}</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;color:var(--gray900);font-size:.9rem;">{{ planta.vendedor.nome }}</div>
+              <div style="font-size:.75rem;color:var(--gray400);margin-top:2px;display:flex;gap:.6rem;flex-wrap:wrap;">
+                {% if planta.vendedor.localizacao %}<span><i class="fas fa-map-marker-alt"></i> {{ planta.vendedor.localizacao }}</span>{% endif %}
+                {% if planta.vendedor.telefone %}<span><i class="fas fa-phone"></i> {{ planta.vendedor.telefone }}</span>{% endif %}
+              </div>
+              {% if planta.vendedor.bio %}
+              <div style="font-size:.75rem;color:var(--gray500);margin-top:.3rem;font-style:italic;">{{ planta.vendedor.bio }}</div>
+              {% endif %}
+              {% if planta.vendedor.instagram or planta.vendedor.facebook %}
+              <div style="display:flex;gap:.5rem;margin-top:.4rem;flex-wrap:wrap;">
+                {% if planta.vendedor.instagram %}
+                <a href="https://instagram.com/{{ planta.vendedor.instagram }}" target="_blank" style="font-size:.72rem;color:#e1306c;"><i class="fab fa-instagram"></i> @{{ planta.vendedor.instagram }}</a>
+                {% endif %}
+                {% if planta.vendedor.facebook %}
+                <a href="https://facebook.com/{{ planta.vendedor.facebook }}" target="_blank" style="font-size:.72rem;color:#1877f2;"><i class="fab fa-facebook"></i> Facebook</a>
+                {% endif %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- ACÇÕES -->
+        {% if request.session.utilizador_id %}
+        {% if utilizador.is_cliente %}
+        <form method="POST" action="/pedido/criar/{{ planta.id }}/" style="margin-bottom:.6rem;">
+          {% csrf_token %}
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem;">
+            <label class="form-label" style="margin:0;white-space:nowrap;font-size:.82rem;">Quantidade:</label>
+            <input type="number" name="quantidade" value="1" min="1" class="form-control" style="width:75px;">
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block"><i class="fas fa-shopping-cart"></i> Encomendar Agora</button>
+        </form>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem;">
+          <a href="/mensagem/vendedor/{{ planta.vendedor.id }}/" class="btn btn-secondary"><i class="fas fa-comment-dots"></i> Mensagem</a>
+          <form method="POST" action="/favorito/{{ planta.id }}/" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline" style="width:100%;"><i class="fas fa-heart"></i> Favorito</button>
+          </form>
+        </div>
+        <a href="/avaliar/{{ planta.vendedor.id }}/" class="btn btn-ghost btn-block" style="color:var(--amber);"><i class="fas fa-star"></i> Avaliar Vendedor</a>
+        {% else %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem;">
+          <a href="/mensagem/vendedor/{{ planta.vendedor.id }}/" class="btn btn-secondary"><i class="fas fa-comment-dots"></i> Mensagem</a>
+          {% if utilizador.id == planta.vendedor.id %}
+          <a href="/planta/{{ planta.id }}/editar/" class="btn btn-outline"><i class="fas fa-pen"></i> Editar Planta</a>
+          {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <a href="/login/" class="btn btn-primary btn-lg btn-block"><i class="fas fa-arrow-right-to-bracket"></i> Entra para encomendar</a>
+        {% endif %}
+
+        <!-- WHATSAPP DIRECTO -->
+        {% if planta.vendedor.whatsapp %}
+        <a href="https://wa.me/{{ planta.vendedor.whatsapp }}?text=Olá%20{{ planta.vendedor.nome }}%2C%20tenho%20interesse%20na%20planta%20{{ planta.nome }}%20que%20vi%20no%20PlantaMoz." target="_blank"
+           style="display:flex;align-items:center;gap:.75rem;margin-top:.6rem;padding:.85rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-lg);text-decoration:none;">
+          <i class="fab fa-whatsapp" style="font-size:1.4rem;color:#25d366;flex-shrink:0;"></i>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:.85rem;color:var(--gray900);">Contactar via WhatsApp</div>
+            <div style="font-size:.72rem;color:var(--gray500);">Fala directamente com o vendedor</div>
+          </div>
+          <span class="btn btn-sm" style="background:#25d366;color:#fff;flex-shrink:0;"><i class="fab fa-whatsapp"></i> Abrir</span>
+        </a>
+        {% endif %}
+
+        <!-- PARTILHAR -->
+        <div style="margin-top:.75rem;">
+          <div style="font-size:.7rem;font-weight:600;color:var(--gray400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;">Partilhar</div>
+          <div style="display:flex;gap:.4rem;">
+            <a href="https://wa.me/?text=Planta%20{{ planta.nome }}%20por%20{{ planta.preco }}%20MT%20no%20PlantaMoz!" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;flex:1;"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2F127.0.0.1%3A8000%2Fplanta%2F{{ planta.id }}%2F" target="_blank" class="btn btn-sm" style="background:#1877f2;color:#fff;flex:1;"><i class="fab fa-facebook"></i></a>
+            <button onclick="navigator.clipboard.writeText(window.location.href);this.textContent='Copiado!'" class="btn btn-outline btn-sm" style="flex:1;"><i class="fas fa-link"></i> Copiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AVALIAÇÕES -->
+    <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--gray200);">
+      <h2 style="font-size:1rem;font-weight:800;color:var(--gray900);margin-bottom:1.25rem;">
+        Avaliações do Vendedor
+        {% if avaliacoes %}<span style="font-size:.82rem;font-weight:400;color:var(--gray400);margin-left:.4rem;">({{ avaliacoes|length }})</span>{% endif %}
+      </h2>
+      {% if avaliacoes %}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;">
+        {% for av in avaliacoes %}
+        <div class="card">
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
+              <div style="display:flex;align-items:center;gap:.5rem;">
+                <div style="width:32px;height:32px;background:var(--g600);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.78rem;flex-shrink:0;">{{ av.cliente.nome|first|upper }}</div>
+                <div>
+                  <div style="font-weight:600;font-size:.82rem;">{{ av.cliente.nome }}</div>
+                  <div style="font-size:.7rem;color:var(--gray400);">{{ av.data_avaliacao|date:"d/m/Y" }}</div>
+                </div>
+              </div>
+              <div>{% for i in "12345" %}<i class="fas fa-star" style="font-size:.78rem;color:{% if forloop.counter <= av.nota %}var(--amber){% else %}var(--gray200){% endif %};"></i>{% endfor %}</div>
+            </div>
+            {% if av.comentario %}<p style="font-size:.82rem;color:var(--gray600);line-height:1.5;">{{ av.comentario }}</p>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-icon"><i class="fas fa-star"></i></div><p>Ainda sem avaliações.</p></div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

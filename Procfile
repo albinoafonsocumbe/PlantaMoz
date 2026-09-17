@@ -1,0 +1,1 @@
+web: gunicorn plantamoz_backend.wsgi:application --timeout 120 --workers 1 --max-requests 500

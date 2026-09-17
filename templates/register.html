@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% block title %}Criar Conta — PlantaMoz{% endblock %}
+{% block content %}
+
+<div class="auth-page">
+
+  <!-- ══ LADO ESQUERDO — BRANDING ══ -->
+  <div class="auth-left">
+    <div class="al-orb al-orb-1"></div>
+    <div class="al-orb al-orb-2"></div>
+    <div class="al-orb al-orb-3"></div>
+
+    <div class="al-content">
+      <div class="al-logo">
+        <div class="al-logo-icon"><i class="fas fa-leaf"></i></div>
+        <span class="al-logo-text">PlantaMoz</span>
+      </div>
+
+      <h1 class="al-h1">
+        Junta-te à maior<br>
+        <span class="al-h1-accent">rede de mudas</span><br>
+        de Moçambique.
+      </h1>
+      <p class="al-p">
+        Basta o teu nome, email e uma senha. Depois compras ou vendes plantas — com a mesma conta.
+      </p>
+
+      <!-- O que podes fazer na plataforma -->
+      <div class="al-type-cards">
+        <div class="al-type-card">
+          <div class="al-type-icon al-type-client"><i class="fas fa-user"></i></div>
+          <div>
+            <div class="al-feat-title">Como Cliente</div>
+            <div class="al-feat-sub">Compra mudas, acompanha encomendas, avalia vendedores</div>
+          </div>
+        </div>
+        <div class="al-type-card">
+          <div class="al-type-icon al-type-vendor"><i class="fas fa-store"></i></div>
+          <div>
+            <div class="al-feat-title">Como Vendedor</div>
+            <div class="al-feat-sub">Publica mudas, gere stock, recebe pedidos de todo o país</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow steps -->
+      <div class="al-flow">
+        <div class="al-flow-step">
+          <div class="al-flow-num">1</div>
+          <span>Preenches os teus dados</span>
+        </div>
+        <i class="fas fa-arrow-right al-flow-arrow"></i>
+        <div class="al-flow-step">
+          <div class="al-flow-num">2</div>
+          <span>Crias a conta grátis</span>
+        </div>
+        <i class="fas fa-arrow-right al-flow-arrow"></i>
+        <div class="al-flow-step">
+          <div class="al-flow-num">3</div>
+          <span>Começas imediatamente</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="al-country">🇲🇿 Moçambique · Gratuito · Sem comissões</div>
+  </div>
+
+  <!-- ══ LADO DIREITO — FORMULÁRIO ══ -->
+  <div class="auth-right" style="align-items:flex-start;padding-top:2rem;padding-bottom:2rem;">
+    <div class="auth-form" style="max-width:400px;width:100%;">
+
+      <div class="auth-mobile-logo">
+        <div class="al-logo-icon" style="width:40px;height:40px;font-size:1rem;border-radius:11px;"><i class="fas fa-leaf"></i></div>
+        <span style="font-weight:800;font-size:1rem;color:var(--g700);">PlantaMoz</span>
+      </div>
+
+      <div class="auth-logo-icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+
+      <h2 class="auth-title">Criar conta grátis</h2>
+      <p class="auth-sub">Só precisas destes dados para começar</p>
+
+      {% if erro %}
+      <div class="alert alert-error">
+        <i class="fas fa-circle-xmark"></i> {{ erro }}
+      </div>
+      {% endif %}
+
+      <form method="POST" autocomplete="on">
+
+        {% csrf_token %}
+
+        <!-- ══ SECÇÃO 1 — DADOS DA CONTA ══ -->
+        <div class="form-section">
+          <div class="form-section-head">
+            <span class="form-section-icon"><i class="fas fa-id-card"></i></span>
+            <div>
+              <div class="form-section-title">A tua conta</div>
+              <div class="form-section-sub">Como te vão conhecer no PlantaMoz</div>
+            </div>
+          </div>
+
+          <!-- Nome de utilizador -->
+          <div class="form-group">
+            <label class="form-label" for="id-nome">Nome de utilizador <span class="req">*</span></label>
+            <div class="form-control-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" name="nome" id="id-nome" class="form-control"
+                     placeholder="Ex.: Ana Martins" required autofocus autocomplete="username">
+            </div>
+            <div class="form-hint"><i class="fas fa-circle-info"></i> Nome público — será o teu "cartão de visita"</div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label" for="id-email">Endereço de email <span class="req">*</span></label>
+            <div class="form-control-icon">
+              <i class="fas fa-envelope"></i>
+              <input type="email" name="email" id="id-email" class="form-control"
+                     placeholder="email@exemplo.com" required autocomplete="email">
+            </div>
+            <div class="form-hint"><i class="fas fa-circle-info"></i> Vais usá-lo para entrar na conta</div>
+          </div>
+        </div>
+
+        <!-- ══ SECÇÃO 2 — CREDENCIAIS ══ -->
+        <div class="form-section">
+          <div class="form-section-head">
+            <span class="form-section-icon"><i class="fas fa-key"></i></span>
+            <div>
+              <div class="form-section-title">Credenciais de acesso</div>
+              <div class="form-section-sub">Escolhe uma senha que só tu conheças</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="pwd-input">Senha <span class="req">*</span></label>
+              <div class="form-control-icon" id="pwd-wrap">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="senha" id="pwd-input" class="form-control"
+                       placeholder="Mín. 6 caracteres" required autocomplete="new-password"
+                       oninput="checkStrength(this.value)">
+                <button type="button" class="pwd-toggle" onclick="togglePwd('pwd-input','pwd-eye')" title="Mostrar senha" aria-label="Mostrar senha">
+                  <i class="fas fa-eye" id="pwd-eye"></i>
+                </button>
+              </div>
+              <div class="pwd-strength-wrap">
+                <div class="pwd-bar" id="pwd-bar"></div>
+              </div>
+              <div class="form-hint" id="pwd-hint" style="display:none;"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="cpwd-input">Confirmar senha <span class="req">*</span></label>
+              <div class="form-control-icon" id="cpwd-wrap">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="confirmar_senha" id="cpwd-input" class="form-control"
+                       placeholder="Repete a senha" required autocomplete="new-password"
+                       oninput="checkMatch()">
+                <button type="button" class="pwd-toggle" onclick="togglePwd('cpwd-input','cpwd-eye')" title="Mostrar senha" aria-label="Mostrar senha">
+                  <i class="fas fa-eye" id="cpwd-eye"></i>
+                </button>
+              </div>
+              <div class="form-hint" id="cpwd-hint" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Benefits mini -->
+        <div class="reg-benefits">
+          <div class="reg-ben"><i class="fas fa-check-circle"></i> Totalmente grátis</div>
+          <div class="reg-ben"><i class="fas fa-check-circle"></i> Sem comissões</div>
+          <div class="reg-ben"><i class="fas fa-check-circle"></i> Seguro e privado</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:.875rem;">
+          <i class="fas fa-user-plus"></i> Criar conta grátis
+        </button>
+      </form>
+
+      <div class="divider-text">ou</div>
+
+      <p class="auth-switch">
+        Já tens conta?
+        <a href="/login/" style="color:var(--g600);font-weight:800;">Entrar <i class="fas fa-arrow-right" style="font-size:.75rem;"></i></a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── AUTH LEFT (shared with login) ── */
+.al-orb{position:absolute;border-radius:50%;pointer-events:none;}
+.al-orb-1{width:500px;height:500px;top:-160px;right:-140px;background:radial-gradient(circle,rgba(61,201,110,.08) 0%,transparent 65%);}
+.al-orb-2{width:320px;height:320px;bottom:-100px;left:-80px;background:radial-gradient(circle,rgba(61,201,110,.06) 0%,transparent 65%);}
+.al-orb-3{width:180px;height:180px;top:45%;left:10%;background:radial-gradient(circle,rgba(37,165,82,.05) 0%,transparent 65%);}
+.al-content{position:relative;z-index:1;width:100%;max-width:420px;}
+.al-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem;}
+.al-logo-icon{
+  width:44px;height:44px;border-radius:13px;
+  background:linear-gradient(135deg,var(--g500),var(--g400));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1.15rem;box-shadow:0 4px 14px rgba(30,139,69,.35);
+}
+.al-logo-text{font-size:1.2rem;font-weight:900;color:#fff;letter-spacing:-.3px;}
+.al-h1{font-size:2.1rem;font-weight:900;color:#fff;line-height:1.15;margin-bottom:.875rem;letter-spacing:-.6px;}
+.al-h1-accent{background:linear-gradient(135deg,var(--g400),var(--g300));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.al-p{font-size:.875rem;color:rgba(255,255,255,.55);line-height:1.75;margin-bottom:1.5rem;max-width:360px;}
+.al-feat-title{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:2px;}
+.al-feat-sub{font-size:.75rem;color:rgba(255,255,255,.45);line-height:1.5;}
+.al-country{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);font-size:.72rem;color:rgba(255,255,255,.3);font-weight:600;white-space:nowrap;}
+
+/* Type info cards */
+.al-type-cards{display:flex;flex-direction:column;gap:.625rem;margin-bottom:1.5rem;}
+.al-type-card{display:flex;align-items:flex-start;gap:.75rem;}
+.al-type-icon{
+  width:36px;height:36px;border-radius:var(--r-md);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:.875rem;
+}
+.al-type-client{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.2);color:#93c5fd;}
+.al-type-vendor{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.2);color:#fcd34d;}
+
+/* Flow */
+.al-flow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.al-flow-step{
+  display:flex;align-items:center;gap:.4rem;
+  font-size:.72rem;color:rgba(255,255,255,.5);font-weight:500;
+}
+.al-flow-num{
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(61,201,110,.15);border:1px solid rgba(61,201,110,.2);
+  color:var(--g400);font-size:.65rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.al-flow-arrow{font-size:.6rem;color:rgba(255,255,255,.2);}
+
+/* ── FORM SPECIFICS ── */
+.auth-mobile-logo{display:none;align-items:center;gap:8px;margin-bottom:1.5rem;}
+@media(max-width:640px){.auth-mobile-logo{display:flex;}}
+
+.pwd-toggle{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--n400);cursor:pointer;font-size:.875rem;padding:4px;transition:color .15s;
+}
+.pwd-toggle:hover{color:var(--n700);}
+
+/* Password strength */
+.pwd-strength-wrap{height:3px;background:var(--n100);border-radius:2px;margin-top:.35rem;overflow:hidden;}
+.pwd-bar{height:100%;width:0;border-radius:2px;transition:width .3s,background .3s;}
+
+/* Confirm match feedback */
+.form-control.is-ok{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.12);}
+.form-control.is-err{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.12);}
+
+/* ── SECÇÕES DO FORMULÁRIO ── */
+.form-section{margin-bottom:1.35rem;}
+.form-section-head{
+  display:flex;align-items:center;gap:.625rem;
+  margin-bottom:.9rem;padding-bottom:.6rem;
+  border-bottom:1px solid var(--n100);
+}
+.form-section-icon{
+  width:34px;height:34px;border-radius:var(--r-md);flex-shrink:0;
+  background:var(--g100);color:var(--g600);
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;
+}
+.form-section-title{font-size:.82rem;font-weight:800;color:var(--n800);letter-spacing:-.2px;}
+.form-section-sub{font-size:.72rem;color:var(--n400);margin-top:1px;}
+.req{color:var(--red);font-weight:800;}
+
+/* Benefits */
+.reg-benefits{
+  display:flex;gap:.75rem;flex-wrap:wrap;
+  background:var(--g50);border:1px solid var(--g200);
+  border-radius:var(--r-lg);padding:.625rem .875rem;margin-top:.25rem;
+}
+.reg-ben{font-size:.75rem;color:var(--g700);font-weight:600;display:flex;align-items:center;gap:4px;}
+.reg-ben i{color:var(--g500);font-size:.7rem;}
+
+.auth-switch{text-align:center;font-size:.875rem;color:var(--n500);}
+</style>
+
+<script>
+/* Toggle password visibility (funciona para o campo indicado) */
+function togglePwd(inputId, eyeId) {
+  const inp = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  eye.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+
+/* Password strength indicator */
+function checkStrength(val) {
+  const bar = document.getElementById('pwd-bar');
+  const hint = document.getElementById('pwd-hint');
+  if (!val) { bar.style.width = '0'; hint.style.display = 'none'; return; }
+  hint.style.display = 'flex';
+  let score = 0;
+  if (val.length >= 6)  score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    { w:'20%', bg:'#ef4444', label:'Muito fraca' },
+    { w:'40%', bg:'#f97316', label:'Fraca' },
+    { w:'60%', bg:'#eab308', label:'Razoável' },
+    { w:'80%', bg:'#22c55e', label:'Boa' },
+    { w:'100%', bg:'#16a34a', label:'Excelente' },
+  ];
+  const lv = levels[Math.min(score, 4)];
+  bar.style.width = lv.w;
+  bar.style.background = lv.bg;
+  hint.textContent = lv.label;
+  hint.style.color = lv.bg;
+  checkMatch();
+}
+
+/* Confirma que as duas senhas coincidem */
+function checkMatch() {
+  const pwd = document.getElementById('pwd-input');
+  const cpwd = document.getElementById('cpwd-input');
+  const hint = document.getElementById('cpwd-hint');
+  if (!cpwd.value) { hint.style.display = 'none'; cpwd.classList.remove('is-ok','is-err'); return; }
+  hint.style.display = 'flex';
+  if (pwd.value === cpwd.value && pwd.value.length >= 6) {
+    cpwd.classList.remove('is-err'); cpwd.classList.add('is-ok');
+    hint.innerHTML = '<i class="fas fa-circle-check"></i> As senhas coincidem';
+    hint.style.color = '#15803d';
+  } else {
+    cpwd.classList.remove('is-ok'); cpwd.classList.add('is-err');
+    hint.innerHTML = '<i class="fas fa-circle-exclamation"></i> As senhas não coincidem';
+    hint.style.color = '#b91c1c';
+  }
+}
+</script>
+
+{% endblock %}

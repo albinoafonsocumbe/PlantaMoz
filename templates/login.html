@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% block title %}Entrar — PlantaMoz{% endblock %}
+{% block content %}
+
+<div class="auth-page">
+
+  <!-- ══ LADO ESQUERDO — BRANDING ══ -->
+  <div class="auth-left">
+    <div class="al-orb al-orb-1"></div>
+    <div class="al-orb al-orb-2"></div>
+    <div class="al-orb al-orb-3"></div>
+    <div class="al-leaf al-leaf-1"><i class="fas fa-leaf"></i></div>
+    <div class="al-leaf al-leaf-2"><i class="fas fa-seedling"></i></div>
+
+    <div class="al-content">
+      <div class="al-logo">
+        <div class="al-logo-icon"><i class="fas fa-leaf"></i></div>
+        <span class="al-logo-text">PlantaMoz</span>
+      </div>
+
+      <h1 class="al-h1">
+        Cultiva o futuro,<br>
+        <span class="al-h1-accent">vende hoje.</span>
+      </h1>
+      <p class="al-p">
+        A plataforma digital para compra e venda de mudas agrícolas em Moçambique.
+      </p>
+
+      <div class="al-features">
+        <div class="al-feat">
+          <div class="al-feat-icon"><i class="fas fa-store"></i></div>
+          <div>
+            <div class="al-feat-title">Marketplace Nacional</div>
+            <div class="al-feat-sub">Conecta viveiros e agricultores de todo o país</div>
+          </div>
+        </div>
+        <div class="al-feat">
+          <div class="al-feat-icon"><i class="fas fa-comments"></i></div>
+          <div>
+            <div class="al-feat-title">Chat em Tempo Real</div>
+            <div class="al-feat-sub">Mensagens directamente com vendedores</div>
+          </div>
+        </div>
+        <div class="al-feat">
+          <div class="al-feat-icon"><i class="fas fa-truck"></i></div>
+          <div>
+            <div class="al-feat-title">Gestão de Encomendas</div>
+            <div class="al-feat-sub">Acompanha cada pedido do início à entrega</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="al-stats">
+        <div class="al-stat">
+          <div class="al-stat-val" data-count="1200" data-suffix="+">1200+</div>
+          <div class="al-stat-label">Plantas</div>
+        </div>
+        <div class="al-stat-sep"></div>
+        <div class="al-stat">
+          <div class="al-stat-val" data-count="340" data-suffix="+">340+</div>
+          <div class="al-stat-label">Vendedores</div>
+        </div>
+        <div class="al-stat-sep"></div>
+        <div class="al-stat">
+          <div class="al-stat-val" data-count="10" data-suffix="+">10+</div>
+          <div class="al-stat-label">Províncias</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="al-country">🇲🇿 Moçambique</div>
+  </div>
+
+  <!-- ══ LADO DIREITO — FORMULÁRIO ══ -->
+  <div class="auth-right">
+    <div class="auth-form">
+      <div class="auth-mobile-logo">
+        <div class="al-logo-icon" style="width:40px;height:40px;font-size:1rem;border-radius:11px;"><i class="fas fa-leaf"></i></div>
+        <span style="font-weight:800;font-size:1rem;color:var(--g700);">PlantaMoz</span>
+      </div>
+
+      <div class="auth-logo-icon">
+        <i class="fas fa-arrow-right-to-bracket"></i>
+      </div>
+
+      <h2 class="auth-title">Bem-vindo de volta</h2>
+      <p class="auth-sub">Entra com o teu nome de utilizador ou email</p>
+
+      {% if erro %}
+      <div class="alert alert-error shake" id="login-alert">
+        <i class="fas fa-circle-xmark"></i> {{ erro }}
+      </div>
+      {% endif %}
+
+      <form method="POST" autocomplete="on" id="login-form" novalidate>
+        {% csrf_token %}
+
+        <!-- ══ CREDENCIAIS ══ -->
+        <div class="form-section">
+          <div class="form-section-head">
+            <span class="form-section-icon"><i class="fas fa-key"></i></span>
+            <div>
+              <div class="form-section-title">Credenciais de acesso</div>
+              <div class="form-section-sub">Usa os dados com que te registaste</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="id-entrada">Nome de utilizador ou email <span class="req">*</span></label>
+            <div class="form-control-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" name="identificador" id="id-entrada" class="form-control {% if erro %}is-err{% endif %}"
+                     placeholder="Ex.: Ana Martins ou email@exemplo.com" required autofocus autocomplete="username">
+            </div>
+            <div class="form-hint"><i class="fas fa-circle-info"></i> Aceitamos os dois — o que preferires</div>
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem;">
+              <label class="form-label" for="pwd-input" style="margin:0;">Senha <span class="req">*</span></label>
+              <a href="#" class="forgot-link" onclick="return false;">Esqueci-me</a>
+            </div>
+            <div class="form-control-icon" id="pwd-wrap">
+              <i class="fas fa-lock"></i>
+              <input type="password" name="senha" id="pwd-input" class="form-control {% if erro %}is-err{% endif %}"
+                     placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" class="pwd-toggle" onclick="togglePwd()" title="Mostrar/ocultar senha" aria-label="Mostrar senha">
+                <i class="fas fa-eye" id="pwd-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Manter sessão -->
+          <label class="remember" for="lembrar">
+            <input type="checkbox" name="lembrar" id="lembrar">
+            <span class="remember-box"><i class="fas fa-check"></i></span>
+            <span class="remember-label">Manter sessão activa neste dispositivo</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn" style="margin-top:.25rem;">
+          <span class="btn-text"><i class="fas fa-arrow-right-to-bracket"></i> Entrar na conta</span>
+          <span class="btn-loading"><i class="fas fa-circle-notch fa-spin"></i> A entrar…</span>
+        </button>
+      </form>
+
+      <div class="divider-text">ou</div>
+
+      <div class="auth-wa-hint">
+        <i class="fab fa-whatsapp" style="color:#25d366;font-size:1.1rem;flex-shrink:0;"></i>
+        <span>Preferes contactar por WhatsApp? <a href="https://wa.me/258000000000" target="_blank" style="color:var(--g600);font-weight:700;">Fala connosco</a></span>
+      </div>
+
+      <p class="auth-switch">
+        Não tens conta?
+        <a href="/register/" style="color:var(--g600);font-weight:800;">Criar conta grátis <i class="fas fa-arrow-right" style="font-size:.75rem;"></i></a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── AUTH LEFT ── */
+.al-orb{position:absolute;border-radius:50%;pointer-events:none;}
+.al-orb-1{width:500px;height:500px;top:-160px;right:-140px;background:radial-gradient(circle,rgba(61,201,110,.08) 0%,transparent 65%);animation:orbFloat 14s ease-in-out infinite;}
+.al-orb-2{width:320px;height:320px;bottom:-100px;left:-80px;background:radial-gradient(circle,rgba(61,201,110,.06) 0%,transparent 65%);animation:orbFloat 18s ease-in-out infinite reverse;}
+.al-orb-3{width:180px;height:180px;top:45%;left:10%;background:radial-gradient(circle,rgba(37,165,82,.05) 0%,transparent 65%);animation:orbFloat 11s ease-in-out infinite;}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-24px) scale(1.06)}}
+
+.al-leaf{position:absolute;color:rgba(61,201,110,.16);pointer-events:none;z-index:0;animation:leafFloat 9s ease-in-out infinite;}
+.al-leaf-1{top:16%;right:6%;font-size:2.2rem;}
+.al-leaf-2{bottom:14%;left:8%;font-size:1.6rem;animation-delay:1.4s;animation-duration:7s;}
+@keyframes leafFloat{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-16px) rotate(10deg)}}
+
+.al-content{position:relative;z-index:1;width:100%;max-width:420px;animation:fadeUp .7s ease both;}
+.al-logo{display:flex;align-items:center;gap:10px;margin-bottom:2.25rem;}
+.al-logo-icon{
+  width:44px;height:44px;border-radius:13px;
+  background:linear-gradient(135deg,var(--g500),var(--g400));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1.15rem;
+  box-shadow:0 4px 14px rgba(30,139,69,.35);
+}
+.al-logo-text{font-size:1.2rem;font-weight:900;color:#fff;letter-spacing:-.3px;}
+
+.al-h1{font-size:2.4rem;font-weight:900;color:#fff;line-height:1.15;margin-bottom:.875rem;letter-spacing:-.7px;}
+.al-h1-accent{
+  background:linear-gradient(135deg,var(--g400),#a3e635);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shine 6s linear infinite;
+}
+@keyframes shine{0%{background-position:0% center}100%{background-position:-200% center}}
+.al-p{font-size:.9rem;color:rgba(255,255,255,.55);line-height:1.75;margin-bottom:2rem;max-width:360px;}
+
+.al-features{display:flex;flex-direction:column;gap:.875rem;margin-bottom:2rem;}
+.al-feat{display:flex;align-items:flex-start;gap:.875rem;transition:transform .2s;}
+.al-feat:hover{transform:translateX(4px);}
+.al-feat-icon{
+  width:38px;height:38px;border-radius:var(--r-lg);flex-shrink:0;
+  background:rgba(61,201,110,.12);border:1px solid rgba(61,201,110,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--g400);font-size:.9rem;
+}
+.al-feat-title{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:2px;}
+.al-feat-sub{font-size:.75rem;color:rgba(255,255,255,.45);line-height:1.5;}
+
+.al-stats{
+  display:flex;align-items:center;gap:0;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--r-xl);padding:.875rem 1.25rem;
+  transition:border-color .2s;
+}
+.al-stats:hover{border-color:rgba(61,201,110,.22);}
+.al-stat{flex:1;text-align:center;}
+.al-stat-val{font-size:1.25rem;font-weight:900;color:#fff;letter-spacing:-.4px;}
+.al-stat-label{font-size:.68rem;color:rgba(255,255,255,.4);font-weight:500;margin-top:2px;}
+.al-stat-sep{width:1px;height:32px;background:rgba(255,255,255,.1);}
+
+.al-country{
+  position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);
+  font-size:.75rem;color:rgba(255,255,255,.3);font-weight:600;
+  white-space:nowrap;
+}
+
+/* ── AUTH FORM ── */
+.auth-right{position:relative;}
+.auth-form{animation:fadeUp .5s ease .12s both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+.auth-mobile-logo{display:none;align-items:center;gap:8px;margin-bottom:1.75rem;}
+@media(max-width:640px){
+  .auth-mobile-logo{display:flex;}
+  .auth-form{animation:none;}
+  .al-content{animation:none;}
+}
+
+.pwd-toggle{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--n400);cursor:pointer;font-size:.875rem;
+  padding:4px;transition:color .15s;
+}
+.pwd-toggle:hover{color:var(--g600);}
+
+.is-err{border-color:#ef4444 !important;box-shadow:0 0 0 3px rgba(239,68,68,.1) !important;}
+.alert.shake{animation:shake .45s ease;}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-7px)}
+  40%{transform:translateX(7px)}
+  60%{transform:translateX(-5px)}
+  80%{transform:translateX(5px)}
+}
+
+/* ── SECÇÃO CREDENCIAIS ── */
+.form-section{margin-bottom:1.15rem;}
+.form-section-head{
+  display:flex;align-items:center;gap:.625rem;
+  margin-bottom:.9rem;padding-bottom:.6rem;
+  border-bottom:1px solid var(--n100);
+}
+.form-section-icon{
+  width:34px;height:34px;border-radius:var(--r-md);flex-shrink:0;
+  background:var(--g100);color:var(--g600);
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;
+}
+.form-section-title{font-size:.82rem;font-weight:800;color:var(--n800);letter-spacing:-.2px;}
+.form-section-sub{font-size:.72rem;color:var(--n400);margin-top:1px;}
+.req{color:var(--red);font-weight:800;}
+
+.forgot-link{
+  font-size:.72rem;font-weight:600;color:var(--n400);
+  transition:color .15s;text-decoration:none;
+}
+.forgot-link:hover{color:var(--g600);}
+
+/* Manter sessão */
+.remember{
+  display:flex;align-items:center;gap:.55rem;cursor:pointer;
+  margin:.15rem 0 1.15rem;user-select:none;width:fit-content;
+}
+.remember input{display:none;}
+.remember-box{
+  width:20px;height:20px;border-radius:6px;flex-shrink:0;
+  border:1.5px solid var(--n300);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:.6rem;transition:all .15s;
+}
+.remember input:checked + .remember-box{background:var(--g600);border-color:var(--g600);}
+.remember-label{font-size:.78rem;color:var(--n500);font-weight:500;}
+.remember:hover .remember-label{color:var(--n700);}
+
+/* Botão com estado de carregamento */
+#login-btn .btn-loading{display:none;}
+#login-btn.loading .btn-text{display:none;}
+#login-btn.loading .btn-loading{display:inline-flex;align-items:center;gap:8px;}
+#login-btn.loading{pointer-events:none;opacity:.85;}
+
+.auth-wa-hint{
+  display:flex;align-items:center;gap:.625rem;
+  background:var(--n50);border:1px solid var(--n200);border-radius:var(--r-lg);
+  padding:.75rem 1rem;font-size:.8rem;color:var(--n600);margin-bottom:1.1rem;
+}
+
+.auth-switch{text-align:center;font-size:.875rem;color:var(--n500);}
+</style>
+
+<script>
+function togglePwd() {
+  const inp = document.getElementById('pwd-input');
+  const eye = document.getElementById('pwd-eye');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    eye.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    eye.className = 'fas fa-eye';
+  }
+}
+
+/* Contadores animados (lado esquerdo) */
+(function(){
+  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const animate = el => {
+    const target = parseInt(el.getAttribute('data-count') || '0', 10);
+    const suffix = el.getAttribute('data-suffix') || '';
+    const start = performance.now(), dur = 1100;
+    const step = now => {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { animate(e.target); io.unobserve(e.target); }
+    });
+  }, { threshold: .5 });
+  document.querySelectorAll('.al-stat-val').forEach(v => io.observe(v));
+})();
+
+/* Estado de carregamento no botão de entrar */
+document.getElementById('login-form').addEventListener('submit', e => {
+  const btn = document.getElementById('login-btn');
+  const entrada = document.getElementById('id-entrada');
+  const pwd = document.getElementById('pwd-input');
+  if (!entrada.value.trim() || !pwd.value) {
+    e.preventDefault();
+    if (!entrada.value.trim()) entrada.focus();
+    else pwd.focus();
+    return;
+  }
+  btn.classList.add('loading');
+});
+</script>
+
+{% endblock %}

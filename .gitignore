@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+media/
+db.sqlite3
+staticfiles/
+.vscode/
+plantamoz/
+*.log
+write_dashboard.py
