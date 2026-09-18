@@ -87,6 +87,12 @@ DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
 if DATABASE_URL:
     DATABASES = {'default': _db_config_url(DATABASE_URL)}
 else:
+    if not DEBUG and not os.getenv('DB_HOST'):
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured(
+            'Falta a base de dados em produção: define DATABASE_URL '
+            '(ou DB_NAME/DB_USER/DB_PASSWORD/DB_HOST/DB_PORT) no ambiente.'
+        )
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',

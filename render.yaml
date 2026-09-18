@@ -17,3 +17,9 @@ services:
         value: "False"
       - key: ALLOWED_HOSTS
         value: "plantamoz.onrender.com"
+      # ⚠️ Preenche este valor na Render: aba Environment → DATABASE_URL
+      # com a connection string do Neon (…?sslmode=require). Reecebe o valor
+      # na dashboard; sync:false impede o blueprint de o apagar em re-aplicações.
+      - key: DATABASE_URL
+        value: ""
+        sync: false
