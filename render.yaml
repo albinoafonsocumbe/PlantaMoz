@@ -1,7 +1,8 @@
-# Render Blueprint — apenas o serviço web.
-# A base de dados fica no NEON (PostgreSQL grátis): https://neon.tech
-# Após criar o serviço, adiciona em "Environment" a variável:
-#   DATABASE_URL = <connection string do Neon (com ?sslmode=require)>
+# Render Blueprint — serviço web + PostgreSQL gerido pela própria Render.
+databases:
+  - name: plantamoz-db
+    plan: free
+
 services:
   - type: web
     name: plantamoz
@@ -17,9 +18,23 @@ services:
         value: "False"
       - key: ALLOWED_HOSTS
         value: "plantamoz.onrender.com"
-      # ⚠️ Preenche este valor na Render: aba Environment → DATABASE_URL
-      # com a connection string do Neon (…?sslmode=require). Reecebe o valor
-      # na dashboard; sync:false impede o blueprint de o apagar em re-aplicações.
-      - key: DATABASE_URL
-        value: ""
-        sync: false
+      - key: DB_NAME
+        fromDatabase:
+          name: plantamoz-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: plantamoz-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: plantamoz-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: plantamoz-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: plantamoz-db
+          property: port
