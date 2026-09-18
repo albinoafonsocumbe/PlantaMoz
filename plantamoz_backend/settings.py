@@ -64,16 +64,39 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'plantamoz_backend.wsgi.application'
 
-DATABASES = {
-    'default': {
+def _db_config_url(url):
+    """Parse uma DATABASE_URL (Neon/Render/etc.) para o dicionario do Django."""
+    from urllib.parse import urlparse, parse_qs, unquote
+    u = urlparse(url)
+    cfg = {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'PlantaMoz'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': u.path[1:],
+        'USER': unquote(u.username) if u.username else '',
+        'PASSWORD': unquote(u.password) if u.password else '',
+        'HOST': u.hostname or '',
+        'PORT': str(u.port) if u.port else '5432',
+        'OPTIONS': {},
     }
-}
+    sslmode = parse_qs(u.query).get('sslmode', [None])[0]
+    if sslmode:
+        cfg['OPTIONS']['sslmode'] = sslmode
+    return cfg
+
+
+DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
+if DATABASE_URL:
+    DATABASES = {'default': _db_config_url(DATABASE_URL)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'PlantaMoz'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
