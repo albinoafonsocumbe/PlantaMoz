@@ -1,8 +1,7 @@
-# Render Blueprint — serviço web + PostgreSQL gerido pela própria Render.
-databases:
-  - name: plantamoz-db
-    plan: free
-
+# Render Blueprint — apenas o serviço web.
+# A base de dados (PostgreSQL) cria-se pela dashboard da Render ("New +" → "PostgreSQL").
+# Depois, em "Environment" deste serviço, define:
+#   DATABASE_URL = Internal Database URL da base (…:5432/nomedb)
 services:
   - type: web
     name: plantamoz
@@ -18,23 +17,8 @@ services:
         value: "False"
       - key: ALLOWED_HOSTS
         value: "plantamoz.onrender.com"
-      - key: DB_NAME
-        fromDatabase:
-          name: plantamoz-db
-          property: database
-      - key: DB_USER
-        fromDatabase:
-          name: plantamoz-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: plantamoz-db
-          property: password
-      - key: DB_HOST
-        fromDatabase:
-          name: plantamoz-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: plantamoz-db
-          property: port
+      # Preenche o valor na Render (aba Environment). sync:false impedido o
+      # blueprint de o apagar em re-aplicações.
+      - key: DATABASE_URL
+        value: ""
+        sync: false
